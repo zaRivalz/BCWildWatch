@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+api/node_modules/
+
+# Environment files — NEVER commit secrets
+.env
+.env.local
+.env.*.local
+
+# Azure Functions local settings (contains secrets)
+api/local.settings.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.user
+
+# Logs
+*.log
+npm-debug.log*
+
+# Build artifacts
+dist/
+build/
+.output/

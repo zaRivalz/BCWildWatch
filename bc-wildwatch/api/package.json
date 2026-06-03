@@ -1,0 +1,17 @@
+{
+  "name": "bc-wildwatch-api",
+  "version": "1.0.0",
+  "description": "BC WildWatch SWA Managed Functions",
+  "main": "src/functions/*.js",
+  "scripts": {
+    "start": "func start",
+    "build": "echo 'No build step required'",
+    "test": "echo 'No tests configured'"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

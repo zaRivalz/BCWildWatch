@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BC WildWatch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════
+       LANDING / LOGIN SCREEN  (shown when unauthenticated)
+  ════════════════════════════════════════════════════ -->
+  <div id="landing" class="screen hidden">
+    <div class="landing-bg"></div>
+    <div class="landing-card">
+      <div class="brand">
+        <!--<span class="brand-icon">🌿</span> -->
+        <h1 class="brand-name">BC WildWatch</h1>
+        <p class="brand-tagline">Belgium Campus Animal Safety Reporting System</p>
+      </div>
+      <p class="landing-description">
+        Report animal sightings and incidents on campus quickly and safely.
+        Sign in with your Belgium Campus Microsoft account to get started.
+      </p>
+      <a href="login" class="btn btn-primary btn-lg btn-full">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 23 23" fill="none" aria-hidden="true">
+          <path d="M1 1h10v10H1z" fill="#f25022"/><path d="M12 1h10v10H12z" fill="#7fba00"/>
+          <path d="M1 12h10v10H1z" fill="#00a4ef"/><path d="M12 12h10v10H12z" fill="#ffb900"/>
+        </svg>
+        Sign in with Microsoft
+      </a>
+      <p class="landing-notice">Access restricted to @belgiumcampus.ac.za accounts</p>
+
+      <div class="bypass-divider"><span>or</span></div>
+      <button id="btn-dev-bypass" class="btn btn-ghost btn-bypass">
+        Continue without sign-in (Dev bypass)
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       MAIN APP SHELL  (shown when authenticated)
+  ════════════════════════════════════════════════════ -->
+  <div id="app" class="screen hidden">
+
+    <!-- Top navigation bar -->
+    <header class="navbar">
+      <div class="navbar-brand">
+        <span>🌿</span>
+        <span class="navbar-title">BC WildWatch</span>
+      </div>
+      <nav class="navbar-nav">
+        <button class="nav-btn active" data-view="home">
+          <span class="nav-icon">🏠</span>
+          <span>Home</span>
+        </button>
+        <button class="nav-btn" data-view="map">
+          <span class="nav-icon">🗺️</span>
+          <span>Map</span>
+        </button>
+        <button class="nav-btn" data-view="chatbot">
+          <span class="nav-icon">💬</span>
+          <span>Assistant</span>
+        </button>
+      </nav>
+      <div class="navbar-user">
+        <span id="user-avatar" class="avatar" title="">?</span>
+        <button class="btn btn-ghost btn-sm" onclick="window.location.href='/logout'">Sign out</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+
+      <!-- ── VIEW: HOME ─────────────────────────────── -->
+      <section id="view-home" class="view active">
+        <div class="view-header">
+          <h2 class="view-title">What did you see?</h2>
+          <p class="view-subtitle">Select the type of animal to start a report</p>
+        </div>
+
+        <div id="animal-grid" class="animal-grid">
+          <!-- Populated by JS from /api/get-animals -->
+          <div class="animal-grid-loading">
+            <div class="spinner"></div>
+            <p>Loading animals…</p>
+          </div>
+        </div>
+
+        <div class="home-actions">
+          <button class="btn btn-secondary" id="btn-other-animal">
+            ❓ Report Other / Unknown Animal
+          </button>
+        </div>
+
+        <!-- Recent alert banner (static UX example) -->
+        <div class="alert-banner">
+          <span>⚠️</span>
+          <span>If you are in immediate danger, contact Campus Security first: <strong>+27 11 495 2000</strong></span>
+        </div>
+      </section>
+
+      <!-- ── VIEW: REPORT FORM ───────────────────────── -->
+      <section id="view-report" class="view">
+        <div class="view-header">
+          <button class="btn btn-ghost btn-back" id="btn-back-to-home">← Back</button>
+          <h2 class="view-title">Report Incident</h2>
+        </div>
+
+        <!-- Selected animal pill -->
+        <div id="selected-animal-pill" class="selected-animal-pill hidden">
+          <span id="selected-animal-icon"></span>
+          <span id="selected-animal-name"></span>
+          <button class="pill-change" id="btn-change-animal">Change</button>
+        </div>
+
+        <form id="report-form" class="report-form" novalidate>
+
+          <!-- Geolocation row -->
+          <div class="form-section">
+            <div class="form-label-row">
+              <label class="form-label">📍 Location</label>
+              <button type="button" class="btn btn-ghost btn-sm" id="btn-geolocate">
+                Use My Location
+              </button>
+            </div>
+            <div id="geo-status" class="geo-status">Location not captured yet</div>
+            <input type="hidden" id="field-lat" name="latitude" />
+            <input type="hidden" id="field-lng" name="longitude" />
+          </div>
+
+          <!-- Address description -->
+          <div class="form-section">
+            <label class="form-label" for="field-address">
+              🏢 Address / Location Description <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="field-address"
+              name="addressDescription"
+              class="form-input"
+              placeholder="e.g. Near the Science Block, parking lot B"
+              required
+              maxlength="500"
+            />
+          </div>
+
+          <!-- Incident description -->
+          <div class="form-section">
+            <label class="form-label" for="field-desc">
+              📝 Incident Description <span class="required">*</span>
+            </label>
+            <textarea
+              id="field-desc"
+              name="description"
+              class="form-textarea"
+              placeholder="Describe what you saw — behaviour, direction of movement, any danger…"
+              required
+              maxlength="2000"
+              rows="4"
+            ></textarea>
+            <span class="char-count"><span id="desc-count">0</span>/2000</span>
+          </div>
+
+          <!-- File upload -->
+          <div class="form-section">
+            <label class="form-label" for="field-file">
+              📷 Photo / Video <span class="optional">(optional)</span>
+            </label>
+            <div class="file-drop" id="file-drop-zone">
+              <input type="file" id="field-file" name="file" accept="image/*,video/*" class="file-input" />
+              <div class="file-drop-content">
+                <span class="file-drop-icon">⬆️</span>
+                <p>Tap to upload or drag & drop</p>
+                <p class="file-hint">Images and videos up to 10 MB</p>
+              </div>
+            </div>
+            <div id="file-preview" class="file-preview hidden"></div>
+          </div>
+
+          <!-- Submit -->
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-lg btn-full" id="btn-submit">
+              Submit Report
+            </button>
+          </div>
+
+          <!-- Feedback messages -->
+          <div id="form-error" class="form-message form-error hidden"></div>
+          <div id="form-success" class="form-message form-success hidden"></div>
+
+        </form>
+      </section>
+
+      <!-- ── VIEW: MAP ──────────────────────────────── -->
+      <section id="view-map" class="view">
+        <div class="view-header">
+          <h2 class="view-title">Campus Incident Map</h2>
+          <p class="view-subtitle">Live view of reported sightings</p>
+        </div>
+        <div class="map-container">
+          <iframe
+            id="powerbi-iframe"
+            class="powerbi-embed"
+            src="https://apps.powerapps.com/play/e/504066b9-4bf9-e5f1-ba67-4e4c52d0f35a/a/26cc7606-a7e9-4ab5-b648-1e44d631b614?tenantId=ea1a909b-6600-4a25-82a5-0c6ed7d0513b&hint=9411b665-d7f3-4d41-8a85-4a5228705199&sourcetime=1778458070791"
+            frameborder="0"
+            allowfullscreen="true"
+            title="BC WildWatch Incident Map"
+          ></iframe>
+        </div>
+        <p class="map-caption">
+          ℹ️ Map refreshes automatically from Dataverse. Marker data is public-read via Power BI Publish to Web.
+        </p>
+      </section>
+
+      <!-- ── VIEW: CHATBOT ──────────────────────────── -->
+      <section id="view-chatbot" class="view">
+        <div class="view-header">
+          <h2 class="view-title">WildWatch Assistant</h2>
+          <p class="view-subtitle">Ask questions about campus animal safety</p>
+        </div>
+        <div class="chatbot-placeholder">
+          <div class="chatbot-icon">🤖</div>
+          <h3>Assistant Coming Soon</h3>
+          <!--<p>
+            The AI assistant is being integrated. Once your chatbot URL is available,
+            replace the placeholder in <code>index.html</code> with an
+            <code>&lt;iframe&gt;</code> pointing to your Power Virtual Agents or
+            Azure Bot Service endpoint.
+          </p>-->
+          <!-- FUTURE:
+          <iframe
+            src="YOUR_CHATBOT_EMBED_URL"
+            class="chatbot-embed"
+            frameborder="0"
+            title="WildWatch Chatbot"
+          ></iframe>
+          -->
+        </div>
+      </section>
+
+    </main><!-- /main-content -->
+
+    <!-- ── SUBMISSION OVERLAY ─────────────────────── -->
+    <div id="submit-overlay" class="overlay hidden">
+      <div class="overlay-card">
+        <div class="spinner spinner-lg"></div>
+        <p id="overlay-msg">Submitting your report…</p>
+      </div>
+    </div>
+
+  </div><!-- /app -->
+
+  <script src="js/main.js" type="module"></script>
+  <script src="js/report.js" type="module"></script>
+</body>
+</html>

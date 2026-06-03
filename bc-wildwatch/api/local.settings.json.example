@@ -1,0 +1,14 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "AzureWebJobsStorage":      "UseDevelopmentStorage=true",
+
+    "AAD_CLIENT_ID":     "REPLACE_WITH_YOUR_APP_REGISTRATION_CLIENT_ID",
+    "AAD_CLIENT_SECRET": "REPLACE_WITH_YOUR_APP_REGISTRATION_CLIENT_SECRET",
+    "AAD_TENANT_ID":     "REPLACE_WITH_YOUR_ENTRA_TENANT_ID_GUID",
+
+    "DATAVERSE_URL":            "https://orgXXXXXXXX.crm4.dynamics.com",
+    "POWER_AUTOMATE_MEDIA_URL": "https://prod-XX.westeurope.logic.azure.com/workflows/..."
+  }
+}
