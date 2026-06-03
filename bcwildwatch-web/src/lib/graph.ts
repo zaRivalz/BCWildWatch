@@ -34,8 +34,10 @@ async function getDriveId(token: string): Promise<string> {
   const drivesRes = await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/drives`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  const drives = (await drivesRes.json()).value as { id: string; name: string }[];
+  if (!drivesRes.ok) throw new Error(`Graph drives lookup failed: ${await drivesRes.text()}`);
+  const drives = ((await drivesRes.json()).value ?? []) as { id: string; name: string }[];
   const drive = drives.find((d) => d.name === driveName) ?? drives[0];
+  if (!drive) throw new Error(`No SharePoint drive found (looked for "${driveName}").`);
   return drive.id;
 }
 

@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       await linkMedia(reportId, url);
     }
     return NextResponse.json({ success: true, reportId });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Failed to submit the report.' }, { status: 502 });
   }
 }

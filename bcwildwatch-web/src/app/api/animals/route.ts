@@ -7,7 +7,7 @@ export async function GET() {
   if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   try {
     return NextResponse.json({ animals: await getAnimals() });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Failed to load animals.' }, { status: 502 });
   }
 }
