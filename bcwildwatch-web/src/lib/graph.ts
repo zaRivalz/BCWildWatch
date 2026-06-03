@@ -45,9 +45,13 @@ async function getDriveId(token: string): Promise<string> {
 export async function uploadMedia(fileName: string, bytes: Buffer): Promise<string> {
   const token = await getGraphToken();
   const driveId = await getDriveId(token);
+  // Folder within the document library to store uploads (e.g. "Media"). Path
+  // segments are encoded individually so nested folders ("a/b") still work.
+  const folder = (process.env.SHAREPOINT_FOLDER ?? 'Media')
+    .split('/').filter(Boolean).map(encodeURIComponent).join('/');
   const safeName = encodeURIComponent(`${Date.now()}-${fileName}`);
   const res = await fetch(
-    `https://graph.microsoft.com/v1.0/drives/${driveId}/root:/BCWildWatch/${safeName}:/content`,
+    `https://graph.microsoft.com/v1.0/drives/${driveId}/root:/${folder}/${safeName}:/content`,
     { method: 'PUT', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/octet-stream' }, body: bytes as unknown as BodyInit },
   );
   if (!res.ok) throw new Error(`Graph upload failed (${res.status}): ${await res.text()}`);

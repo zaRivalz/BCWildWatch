@@ -1,7 +1,7 @@
 // src/lib/dataverse.ts
 import 'server-only';
 import { requireEnv } from '@/lib/env';
-import { emailFilter, mapAnimal, type Animal } from '@/lib/dataverse.helpers';
+import { emailFilter, mapAnimal, dataverseOrigin, type Animal } from '@/lib/dataverse.helpers';
 
 let tokenCache: { token: string; expiresAt: number } | null = null;
 
@@ -9,7 +9,7 @@ async function getToken(): Promise<string> {
   const now = Date.now();
   if (tokenCache && tokenCache.expiresAt > now + 60_000) return tokenCache.token;
   const tenant = requireEnv('AAD_TENANT_ID');
-  const dv = requireEnv('DATAVERSE_URL').replace(/\/$/, '');
+  const dv = dataverseOrigin(requireEnv('DATAVERSE_URL'));
   const body = new URLSearchParams({
     grant_type: 'client_credentials',
     client_id: requireEnv('AAD_CLIENT_ID'),
@@ -26,7 +26,7 @@ async function getToken(): Promise<string> {
 }
 
 async function dv(method: string, path: string, body?: unknown, extraHeaders?: Record<string, string>) {
-  const base = requireEnv('DATAVERSE_URL').replace(/\/$/, '');
+  const base = dataverseOrigin(requireEnv('DATAVERSE_URL'));
   const token = await getToken();
   const res = await fetch(`${base}${path}`, {
     method,
