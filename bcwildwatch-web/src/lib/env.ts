@@ -4,7 +4,7 @@ export function requireEnv(name: string): string {
   return v;
 }
 
-export const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '')
+export const ADMIN_EMAILS: string[] = (process.env.ADMIN_EMAILS ?? '')
   .split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
 
 export const ALLOWED_DOMAIN = '@belgiumcampus.ac.za';
