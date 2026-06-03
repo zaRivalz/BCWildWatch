@@ -17,7 +17,17 @@
       "Bash(npm i *)",
       "Bash(npx shadcn@latest init -d)",
       "Bash(npm test *)",
-      "Bash(npx shadcn@latest add button card input textarea select label sonner skeleton)"
+      "Bash(npx shadcn@latest add button card input textarea select label sonner skeleton)",
+      "Bash(python3 -c \"import sys,json; p=json.load\\(sys.stdin\\); print\\('scripts:', json.dumps\\(p.get\\('scripts',{}\\), indent=2\\)\\); print\\('vitest config from package.json:', p.get\\('vitest', 'none'\\)\\)\")",
+      "Bash(git check-ignore *)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\rober\\\\Desktop\\\\Claude\\\\Projects\\\\Belgium Campus\\\\INL381\\\\BCWildWatch\\\\bcwildwatch-web\\\\node_modules\\\\next-auth\\\\providers\" | Where-Object { $_.Name -match \"entra|microsoft\" } | Select-Object Name)",
+      "Bash(npx tsc *)",
+      "Bash(npm ls *)",
+      "Bash(npx eslint *)",
+      "Bash(node -e \"console.log\\(require\\('crypto'\\).randomBytes\\(32\\).toString\\('base64'\\)\\)\")",
+      "Bash(node --env-file=.env.local scripts/verify-dataverse.mjs)",
+      "Bash(node --env-file=.env.local scripts/diag-dataverse.mjs)",
+      "Bash(git merge *)"
     ]
   }
 }
