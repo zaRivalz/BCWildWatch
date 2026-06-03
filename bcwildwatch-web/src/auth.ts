@@ -1,6 +1,6 @@
 import NextAuth from 'next-auth';
 import MicrosoftEntraID from 'next-auth/providers/microsoft-entra-id';
-import { isAllowedEmail } from '@/lib/authPolicy';
+import { isAllowedEmail, extractEmail } from '@/lib/authPolicy';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -13,20 +13,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async signIn({ profile }) {
-      const email = (profile?.email ?? (profile as { preferred_username?: string })?.preferred_username) as string | undefined;
-      return isAllowedEmail(email);
+      return isAllowedEmail(extractEmail(profile));
     },
     async jwt({ token, profile }) {
       if (profile) {
-        token.email = (profile.email ?? (profile as { preferred_username?: string }).preferred_username) as string;
-        token.name = profile.name as string;
+        token.email = extractEmail(profile) ?? token.email;
+        token.name = typeof profile.name === 'string' ? profile.name : token.name;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.email = token.email as string;
-        session.user.name = token.name as string;
+        if (token.email) session.user.email = token.email as string;
+        if (token.name) session.user.name = token.name as string;
       }
       return session;
     },

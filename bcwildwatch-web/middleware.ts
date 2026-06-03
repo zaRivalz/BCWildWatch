@@ -2,7 +2,10 @@ import { auth } from '@/auth';
 export default auth((req) => {
   const isAuthed = !!req.auth;
   const { pathname } = req.nextUrl;
-  const isPublic = pathname.startsWith('/login') || pathname.startsWith('/api/auth');
+  const isPublic =
+    pathname === '/login' ||
+    pathname.startsWith('/login/') ||
+    pathname.startsWith('/api/auth');
   if (!isAuthed && !isPublic) {
     const url = new URL('/login', req.nextUrl.origin);
     return Response.redirect(url);
