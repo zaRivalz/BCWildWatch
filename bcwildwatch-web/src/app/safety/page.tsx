@@ -1,4 +1,5 @@
 import { Card } from '@/components/ui/card';
+import { Reveal } from '@/components/reveal';
 import { SAFETY_TIPS, EMERGENCY_CONTACTS, dangerBadgeClass } from '@/lib/safetyTips';
 
 export default function SafetyPage() {
@@ -29,30 +30,32 @@ export default function SafetyPage() {
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">Animal safety guide</h2>
         <div className="grid gap-3 sm:grid-cols-2">
-          {SAFETY_TIPS.map((tip) => (
-            <Card key={tip.animal} className="space-y-3 p-4">
-              <div className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-2 font-semibold">
-                  <span aria-hidden>{tip.emoji}</span>
-                  {tip.animal}
-                </span>
-                <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${dangerBadgeClass(tip.danger)}`}>
-                  {tip.danger} risk
-                </span>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground">Do</p>
-                <ul className="ml-4 list-disc text-sm">
-                  {tip.whatToDo.map((t) => <li key={t}>{t}</li>)}
-                </ul>
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground">Avoid</p>
-                <ul className="ml-4 list-disc text-sm">
-                  {tip.avoid.map((t) => <li key={t}>{t}</li>)}
-                </ul>
-              </div>
-            </Card>
+          {SAFETY_TIPS.map((tip, i) => (
+            <Reveal key={tip.animal} delay={i * 0.05}>
+              <Card className="space-y-3 p-4">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-2 font-semibold">
+                    <span aria-hidden>{tip.emoji}</span>
+                    {tip.animal}
+                  </span>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${dangerBadgeClass(tip.danger)}`}>
+                    {tip.danger} risk
+                  </span>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground">Do</p>
+                  <ul className="ml-4 list-disc text-sm">
+                    {tip.whatToDo.map((t) => <li key={t}>{t}</li>)}
+                  </ul>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground">Avoid</p>
+                  <ul className="ml-4 list-disc text-sm">
+                    {tip.avoid.map((t) => <li key={t}>{t}</li>)}
+                  </ul>
+                </div>
+              </Card>
+            </Reveal>
           ))}
         </div>
       </section>
