@@ -25,7 +25,7 @@ describe('mapReportRow', () => {
     expect(mapReportRow({
       bcw_reportid: 'r1',
       bcw_addressdescription: 'Block A',
-      cr04d_description: 'big snake',
+      bcw_description: 'big snake',
       createdon: '2026-06-04T10:00:00Z',
       bcw_status: 755900002,
       bcw_Animal: { bcw_name: 'Snake' },

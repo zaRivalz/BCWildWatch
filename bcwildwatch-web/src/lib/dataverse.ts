@@ -69,7 +69,7 @@ export interface NewReport {
 export async function createReport(r: NewReport): Promise<string> {
   const body: Record<string, unknown> = {
     bcw_addressdescription: r.addressDescription,
-    cr04d_description: r.description,
+    bcw_description: r.description,
     bcw_status: DEFAULT_STATUS_VALUE,
     'bcw_Reporter@odata.bind': `/bcw_users(${r.userId})`,
   };
@@ -106,14 +106,14 @@ export async function getMyReports(email: string): Promise<ReportRow[]> {
   if (!isGuid(userId)) return [];
   const r = await dv('GET',
     `/api/data/v9.2/bcw_reports?$filter=_bcw_reporter_value eq ${userId}` +
-    `&$select=bcw_reportid,bcw_addressdescription,cr04d_description,bcw_status,createdon` +
+    `&$select=bcw_reportid,bcw_addressdescription,bcw_description,bcw_status,createdon` +
     `&$orderby=createdon desc&$expand=bcw_Animal($select=bcw_name)`);
   return (r?.value ?? []).map(mapReportRow);
 }
 
 export async function getAllReports(top = 100): Promise<ReportRow[]> {
   const r = await dv('GET',
-    `/api/data/v9.2/bcw_reports?$select=bcw_reportid,bcw_addressdescription,cr04d_description,bcw_status,createdon` +
+    `/api/data/v9.2/bcw_reports?$select=bcw_reportid,bcw_addressdescription,bcw_description,bcw_status,createdon` +
     `&$orderby=createdon desc&$top=${top}` +
     `&$expand=bcw_Animal($select=bcw_name),bcw_Reporter($select=bcw_email)`);
   return (r?.value ?? []).map(mapReportRow);

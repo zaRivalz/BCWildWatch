@@ -42,7 +42,7 @@ export interface ReportRow {
 export function mapReportRow(row: {
   bcw_reportid: string;
   bcw_addressdescription?: string | null;
-  cr04d_description?: string | null;
+  bcw_description?: string | null;
   createdon: string;
   bcw_status?: number | null;
   bcw_Animal?: { bcw_name?: string } | null;
@@ -51,7 +51,7 @@ export function mapReportRow(row: {
   return {
     id: row.bcw_reportid,
     address: row.bcw_addressdescription ?? '',
-    description: row.cr04d_description ?? '',
+    description: row.bcw_description ?? '',
     createdOn: row.createdon,
     status: row.bcw_status ?? DEFAULT_STATUS_VALUE,
     animal: row.bcw_Animal?.bcw_name ?? 'Unknown',
