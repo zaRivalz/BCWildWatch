@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { isAdmin } from '@/lib/authPolicy';
 import { isValidStatus } from '@/lib/reportStatus';
 import { updateReportStatus } from '@/lib/dataverse';
+import { isGuid } from '@/lib/dataverse.helpers';
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -13,7 +14,7 @@ export async function POST(req: NextRequest) {
   try { body = await req.json(); } catch { body = null; }
   const reportId = (body as { reportId?: unknown })?.reportId;
   const status = (body as { status?: unknown })?.status;
-  if (typeof reportId !== 'string' || !reportId || !isValidStatus(status)) {
+  if (!isGuid(reportId) || !isValidStatus(status)) {
     return NextResponse.json({ error: 'Invalid reportId or status.' }, { status: 400 });
   }
   try {

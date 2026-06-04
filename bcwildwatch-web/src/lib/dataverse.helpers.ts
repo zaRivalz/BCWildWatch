@@ -1,5 +1,11 @@
 import { normalizeStatus, type ReportStatus } from '@/lib/reportStatus';
 
+const GUID_RE = /^\{?[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\}?$/;
+
+export function isGuid(value: unknown): value is string {
+  return typeof value === 'string' && GUID_RE.test(value);
+}
+
 export function escapeODataString(s: string): string {
   return s.replace(/'/g, "''");
 }

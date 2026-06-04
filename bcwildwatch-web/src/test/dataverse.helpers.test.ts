@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { escapeODataString, emailFilter, mapAnimal, dataverseOrigin, mapReportRow } from '@/lib/dataverse.helpers';
+import { escapeODataString, emailFilter, mapAnimal, dataverseOrigin, mapReportRow, isGuid } from '@/lib/dataverse.helpers';
 
 describe('dataverse helpers', () => {
   it('escapes single quotes for OData', () => {
@@ -41,5 +41,20 @@ describe('mapReportRow', () => {
       id: 'r2', address: '', description: '', createdOn: '2026-06-04T10:00:00Z',
       status: 'New', animal: 'Unknown', reporter: '',
     });
+  });
+});
+
+describe('isGuid', () => {
+  it('accepts a canonical GUID (any case, optional braces)', () => {
+    expect(isGuid('2905af9c-d99d-458b-97d4-abb40bc573d4')).toBe(true);
+    expect(isGuid('2905AF9C-D99D-458B-97D4-ABB40BC573D4')).toBe(true);
+    expect(isGuid('{2905af9c-d99d-458b-97d4-abb40bc573d4}')).toBe(true);
+  });
+  it('rejects non-GUIDs and injection attempts', () => {
+    expect(isGuid("abc' or 1 eq 1")).toBe(false);
+    expect(isGuid('')).toBe(false);
+    expect(isGuid('123')).toBe(false);
+    expect(isGuid(null)).toBe(false);
+    expect(isGuid(42)).toBe(false);
   });
 });

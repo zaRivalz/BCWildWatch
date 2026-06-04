@@ -1,7 +1,7 @@
 // src/lib/dataverse.ts
 import 'server-only';
 import { requireEnv } from '@/lib/env';
-import { emailFilter, mapAnimal, mapReportRow, dataverseOrigin, type Animal, type ReportRow } from '@/lib/dataverse.helpers';
+import { emailFilter, mapAnimal, mapReportRow, dataverseOrigin, isGuid, type Animal, type ReportRow } from '@/lib/dataverse.helpers';
 import { DEFAULT_STATUS, type ReportStatus } from '@/lib/reportStatus';
 
 let tokenCache: { token: string; expiresAt: number } | null = null;
@@ -102,7 +102,7 @@ export async function getMyReports(email: string): Promise<ReportRow[]> {
   const filter = encodeURIComponent(emailFilter(email));
   const found = await dv('GET', `/api/data/v9.2/bcw_users?$filter=${filter}&$select=bcw_userid&$top=1`);
   const userId = found?.value?.[0]?.bcw_userid;
-  if (!userId) return [];
+  if (!isGuid(userId)) return [];
   const r = await dv('GET',
     `/api/data/v9.2/bcw_reports?$filter=_bcw_reporter_value eq ${userId}` +
     `&$select=bcw_reportid,bcw_addressdescription,bcw_description,bcw_status,createdon` +
