@@ -7,4 +7,10 @@ export function requireEnv(name: string): string {
 export const ADMIN_EMAILS: string[] = (process.env.ADMIN_EMAILS ?? '')
   .split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
 
-export const ALLOWED_DOMAIN = '@belgiumcampus.ac.za';
+// Accept staff (user@belgiumcampus.ac.za) and any sub-domain such as
+// students (user@student.belgiumcampus.ac.za), while rejecting look-alike
+// domains like "evilbelgiumcampus.ac.za".
+export const ALLOWED_EMAIL_SUFFIXES = [
+  '@belgiumcampus.ac.za',
+  '.belgiumcampus.ac.za',
+] as const;

@@ -2,11 +2,17 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { isAllowedEmail, extractEmail } from '@/lib/authPolicy';
 
 describe('isAllowedEmail', () => {
-  it('allows campus emails (case-insensitive)', () => {
+  it('allows staff campus emails (case-insensitive)', () => {
     expect(isAllowedEmail('Jane.Doe@belgiumcampus.ac.za')).toBe(true);
+  });
+  it('allows student sub-domain emails', () => {
+    expect(isAllowedEmail('601639@student.belgiumcampus.ac.za')).toBe(true);
   });
   it('rejects non-campus emails', () => {
     expect(isAllowedEmail('person@gmail.com')).toBe(false);
+  });
+  it('rejects look-alike domains', () => {
+    expect(isAllowedEmail('attacker@evilbelgiumcampus.ac.za')).toBe(false);
   });
   it('rejects empty/undefined', () => {
     expect(isAllowedEmail(undefined)).toBe(false);

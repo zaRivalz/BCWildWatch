@@ -1,8 +1,9 @@
-import { ALLOWED_DOMAIN, ADMIN_EMAILS } from '@/lib/env';
+import { ALLOWED_EMAIL_SUFFIXES, ADMIN_EMAILS } from '@/lib/env';
 
 export function isAllowedEmail(email: string | null | undefined): boolean {
   if (!email) return false;
-  return email.toLowerCase().endsWith(ALLOWED_DOMAIN);
+  const lower = email.toLowerCase();
+  return ALLOWED_EMAIL_SUFFIXES.some((suffix) => lower.endsWith(suffix));
 }
 
 export function extractEmail(profile: unknown): string | undefined {
