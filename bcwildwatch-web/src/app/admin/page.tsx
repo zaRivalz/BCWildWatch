@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { isAdmin } from '@/lib/authPolicy';
 import { getAllReports } from '@/lib/dataverse';
 import { AdminStatusSelect } from '@/components/admin-status-select';
+import { ReportPhoto } from '@/components/report-photo';
 import type { ReportRow } from '@/lib/dataverse.helpers';
 
 export default async function AdminPage() {
@@ -32,6 +33,7 @@ export default async function AdminPage() {
               <thead>
                 <tr className="border-b text-left text-muted-foreground">
                   <th className="py-2 pr-4">Date</th>
+                  <th className="py-2 pr-4">Photo</th>
                   <th className="py-2 pr-4">Animal</th>
                   <th className="py-2 pr-4">Location</th>
                   <th className="py-2 pr-4">Reporter</th>
@@ -42,6 +44,11 @@ export default async function AdminPage() {
                 {reports.map((r) => (
                   <tr key={r.id} className="border-b align-top">
                     <td className="py-2 pr-4 whitespace-nowrap">{new Date(r.createdOn).toLocaleDateString()}</td>
+                    <td className="py-2 pr-4">
+                      {r.mediaId
+                        ? <ReportPhoto mediaId={r.mediaId} alt={`${r.animal} photo`} size={48} />
+                        : <span className="text-muted-foreground">—</span>}
+                    </td>
                     <td className="py-2 pr-4">{r.animal}</td>
                     <td className="py-2 pr-4">{r.address}</td>
                     <td className="py-2 pr-4">{r.reporter}</td>
