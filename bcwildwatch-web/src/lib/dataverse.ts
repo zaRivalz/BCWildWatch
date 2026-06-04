@@ -1,7 +1,8 @@
 // src/lib/dataverse.ts
 import 'server-only';
 import { requireEnv } from '@/lib/env';
-import { emailFilter, mapAnimal, dataverseOrigin, type Animal } from '@/lib/dataverse.helpers';
+import { emailFilter, mapAnimal, mapReportRow, dataverseOrigin, type Animal, type ReportRow } from '@/lib/dataverse.helpers';
+import { DEFAULT_STATUS, type ReportStatus } from '@/lib/reportStatus';
 
 let tokenCache: { token: string; expiresAt: number } | null = null;
 
@@ -69,6 +70,7 @@ export async function createReport(r: NewReport): Promise<string> {
   const body: Record<string, unknown> = {
     bcw_addressdescription: r.addressDescription,
     bcw_description: r.description,
+    bcw_status: DEFAULT_STATUS,
     'bcw_reporter@odata.bind': `/bcw_users(${r.userId})`,
   };
   if (r.animalId && r.animalId !== 'OTHER') body['bcw_animal@odata.bind'] = `/bcw_animals(${r.animalId})`;
@@ -94,4 +96,28 @@ export async function getRecentReports(top = 10) {
     createdOn: row.createdon,
     animal: row.bcw_animal?.bcw_name ?? 'Unknown',
   }));
+}
+
+export async function getMyReports(email: string): Promise<ReportRow[]> {
+  const filter = encodeURIComponent(emailFilter(email));
+  const found = await dv('GET', `/api/data/v9.2/bcw_users?$filter=${filter}&$select=bcw_userid&$top=1`);
+  const userId = found?.value?.[0]?.bcw_userid;
+  if (!userId) return [];
+  const r = await dv('GET',
+    `/api/data/v9.2/bcw_reports?$filter=_bcw_reporter_value eq ${userId}` +
+    `&$select=bcw_reportid,bcw_addressdescription,bcw_description,bcw_status,createdon` +
+    `&$orderby=createdon desc&$expand=bcw_animal($select=bcw_name)`);
+  return (r?.value ?? []).map(mapReportRow);
+}
+
+export async function getAllReports(top = 100): Promise<ReportRow[]> {
+  const r = await dv('GET',
+    `/api/data/v9.2/bcw_reports?$select=bcw_reportid,bcw_addressdescription,bcw_description,bcw_status,createdon` +
+    `&$orderby=createdon desc&$top=${top}` +
+    `&$expand=bcw_animal($select=bcw_name),bcw_reporter($select=bcw_email)`);
+  return (r?.value ?? []).map(mapReportRow);
+}
+
+export async function updateReportStatus(reportId: string, status: ReportStatus): Promise<void> {
+  await dv('PATCH', `/api/data/v9.2/bcw_reports(${reportId})`, { bcw_status: status });
 }
