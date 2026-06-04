@@ -1,5 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { Reveal } from '@/components/reveal';
+import { WildWatchAssistant } from '@/components/wildwatch-assistant';
 import { SAFETY_TIPS, EMERGENCY_CONTACTS, dangerBadgeClass } from '@/lib/safetyTips';
 
 export default function SafetyPage() {
@@ -69,7 +70,7 @@ export default function SafetyPage() {
             className="h-[60vh] w-full rounded-lg border"
           />
         ) : (
-          <p className="text-sm text-muted-foreground">Assistant not configured.</p>
+          <WildWatchAssistant />
         )}
       </section>
     </div>
