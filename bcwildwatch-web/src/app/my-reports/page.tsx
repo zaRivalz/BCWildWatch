@@ -3,6 +3,7 @@ import { getMyReports } from '@/lib/dataverse';
 import { Card } from '@/components/ui/card';
 import { Reveal } from '@/components/reveal';
 import { statusBadgeClass, statusLabel } from '@/lib/reportStatus';
+import { ReportPhoto } from '@/components/report-photo';
 import type { ReportRow } from '@/lib/dataverse.helpers';
 
 export default async function MyReportsPage() {
@@ -31,6 +32,9 @@ export default async function MyReportsPage() {
                 </div>
                 <div className="text-sm">{r.address}</div>
                 {r.description && <div className="text-sm text-muted-foreground">{r.description}</div>}
+                {r.mediaId && (
+                  <ReportPhoto mediaId={r.mediaId} alt={`${r.animal} photo`} size={80} />
+                )}
                 <div className="text-xs text-muted-foreground">{new Date(r.createdOn).toLocaleString()}</div>
               </Card>
             </Reveal>

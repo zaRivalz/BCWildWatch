@@ -1,5 +1,6 @@
 import 'server-only';
 import { requireEnv } from '@/lib/env';
+import { encodeSharingUrl, contentTypeForFilename } from '@/lib/media';
 
 let tokenCache: { token: string; expiresAt: number } | null = null;
 
@@ -56,4 +57,31 @@ export async function uploadMedia(fileName: string, bytes: Buffer): Promise<stri
   );
   if (!res.ok) throw new Error(`Graph upload failed (${res.status}): ${await res.text()}`);
   return (await res.json()).webUrl as string;
+}
+
+export interface DownloadedMedia {
+  bytes: Buffer;
+  contentType: string;
+}
+
+/**
+ * Downloads a SharePoint file's bytes app-only, given its stored webUrl. Uses
+ * the Graph `/shares/{token}/driveItem/content` endpoint so we don't need to
+ * track drive/item ids. Falls back to inferring the content-type from the
+ * filename when SharePoint returns a generic type.
+ */
+export async function downloadMedia(webUrl: string, filename?: string): Promise<DownloadedMedia> {
+  const token = await getGraphToken();
+  const share = encodeSharingUrl(webUrl);
+  const res = await fetch(
+    `https://graph.microsoft.com/v1.0/shares/${share}/driveItem/content`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+  if (!res.ok) throw new Error(`Graph download failed (${res.status}): ${await res.text()}`);
+  const bytes = Buffer.from(await res.arrayBuffer());
+  const headerType = res.headers.get('content-type') ?? '';
+  const contentType = headerType.startsWith('image/')
+    ? headerType
+    : contentTypeForFilename(filename);
+  return { bytes, contentType };
 }

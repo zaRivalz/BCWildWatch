@@ -3,6 +3,7 @@ import 'server-only';
 import { requireEnv } from '@/lib/env';
 import { emailFilter, mapAnimal, mapReportRow, dataverseOrigin, isGuid, type Animal, type ReportRow } from '@/lib/dataverse.helpers';
 import { DEFAULT_STATUS_VALUE, type ReportStatusValue } from '@/lib/reportStatus';
+import { attachMediaToReports, type MediaRow } from '@/lib/media';
 
 let tokenCache: { token: string; expiresAt: number } | null = null;
 
@@ -108,7 +109,8 @@ export async function getMyReports(email: string): Promise<ReportRow[]> {
     `/api/data/v9.2/bcw_reports?$filter=_bcw_reporter_value eq ${userId}` +
     `&$select=bcw_reportid,bcw_addressdescription,bcw_description,bcw_status,createdon` +
     `&$orderby=createdon desc&$expand=bcw_Animal($select=bcw_name)`);
-  return (r?.value ?? []).map(mapReportRow);
+  const reports = (r?.value ?? []).map(mapReportRow);
+  return withMedia(reports);
 }
 
 export async function getAllReports(top = 100): Promise<ReportRow[]> {
@@ -116,7 +118,46 @@ export async function getAllReports(top = 100): Promise<ReportRow[]> {
     `/api/data/v9.2/bcw_reports?$select=bcw_reportid,bcw_addressdescription,bcw_description,bcw_status,createdon` +
     `&$orderby=createdon desc&$top=${top}` +
     `&$expand=bcw_Animal($select=bcw_name),bcw_Reporter($select=bcw_email)`);
-  return (r?.value ?? []).map(mapReportRow);
+  const reports = (r?.value ?? []).map(mapReportRow);
+  return withMedia(reports);
+}
+
+/** Attaches the first linked photo (if any) to each report. */
+async function withMedia(reports: ReportRow[]): Promise<ReportRow[]> {
+  if (reports.length === 0) return reports;
+  try {
+    const media = await getMediaForReports(reports.map((r) => r.id));
+    return attachMediaToReports(reports, media);
+  } catch {
+    return reports; // a media lookup failure must not break the report list
+  }
+}
+
+/** Fetches photo records (bcw_medias) linked to the given report ids. */
+export async function getMediaForReports(reportIds: string[]): Promise<MediaRow[]> {
+  const ids = reportIds.filter(isGuid);
+  if (ids.length === 0) return [];
+  const filter = ids.map((id) => `_bcw_linkedreport_value eq ${id}`).join(' or ');
+  const r = await dv('GET',
+    `/api/data/v9.2/bcw_medias?$select=bcw_mediaid,bcw_filename,_bcw_linkedreport_value` +
+    `&$filter=${encodeURIComponent(filter)}`);
+  return (r?.value ?? []).map((row: {
+    bcw_mediaid: string; bcw_filename?: string | null; _bcw_linkedreport_value: string;
+  }): MediaRow => ({
+    mediaId: row.bcw_mediaid,
+    reportId: row._bcw_linkedreport_value,
+    filename: row.bcw_filename ?? undefined,
+  }));
+}
+
+/** Returns a single photo's SharePoint URL + filename, or null if not found. */
+export async function getMediaFileUrl(mediaId: string): Promise<{ fileUrl: string; filename?: string } | null> {
+  if (!isGuid(mediaId)) return null;
+  const r = await dv('GET',
+    `/api/data/v9.2/bcw_medias(${mediaId})?$select=bcw_fileurl,bcw_filename`);
+  const fileUrl = r?.bcw_fileurl;
+  if (typeof fileUrl !== 'string' || !fileUrl) return null;
+  return { fileUrl, filename: r?.bcw_filename ?? undefined };
 }
 
 export async function updateReportStatus(reportId: string, status: ReportStatusValue): Promise<void> {

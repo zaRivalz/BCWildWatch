@@ -37,6 +37,8 @@ export interface ReportRow {
   status: number; // bcw_status option-set value
   animal: string;
   reporter: string;
+  mediaId?: string; // bcw_mediaid of the first linked photo, if any
+  mediaFilename?: string; // original filename of that photo
 }
 
 export function mapReportRow(row: {
