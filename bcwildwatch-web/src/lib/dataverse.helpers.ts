@@ -1,4 +1,4 @@
-import { normalizeStatus, type ReportStatus } from '@/lib/reportStatus';
+import { DEFAULT_STATUS_VALUE } from '@/lib/reportStatus';
 
 const GUID_RE = /^\{?[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\}?$/;
 
@@ -34,7 +34,7 @@ export interface ReportRow {
   address: string;
   description: string;
   createdOn: string;
-  status: ReportStatus;
+  status: number; // bcw_status option-set value
   animal: string;
   reporter: string;
 }
@@ -44,17 +44,17 @@ export function mapReportRow(row: {
   bcw_addressdescription?: string | null;
   bcw_description?: string | null;
   createdon: string;
-  bcw_status?: string | null;
-  bcw_animal?: { bcw_name?: string } | null;
-  bcw_reporter?: { bcw_email?: string } | null;
+  bcw_status?: number | null;
+  bcw_Animal?: { bcw_name?: string } | null;
+  bcw_Reporter?: { bcw_email?: string } | null;
 }): ReportRow {
   return {
     id: row.bcw_reportid,
     address: row.bcw_addressdescription ?? '',
     description: row.bcw_description ?? '',
     createdOn: row.createdon,
-    status: normalizeStatus(row.bcw_status),
-    animal: row.bcw_animal?.bcw_name ?? 'Unknown',
-    reporter: row.bcw_reporter?.bcw_email ?? '',
+    status: row.bcw_status ?? DEFAULT_STATUS_VALUE,
+    animal: row.bcw_Animal?.bcw_name ?? 'Unknown',
+    reporter: row.bcw_Reporter?.bcw_email ?? '',
   };
 }

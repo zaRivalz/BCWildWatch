@@ -27,19 +27,19 @@ describe('mapReportRow', () => {
       bcw_addressdescription: 'Block A',
       bcw_description: 'big snake',
       createdon: '2026-06-04T10:00:00Z',
-      bcw_status: 'Investigating',
-      bcw_animal: { bcw_name: 'Snake' },
-      bcw_reporter: { bcw_email: 'a@belgiumcampus.ac.za' },
+      bcw_status: 755900002,
+      bcw_Animal: { bcw_name: 'Snake' },
+      bcw_Reporter: { bcw_email: 'a@belgiumcampus.ac.za' },
     })).toEqual({
       id: 'r1', address: 'Block A', description: 'big snake',
-      createdOn: '2026-06-04T10:00:00Z', status: 'Investigating',
+      createdOn: '2026-06-04T10:00:00Z', status: 755900002,
       animal: 'Snake', reporter: 'a@belgiumcampus.ac.za',
     });
   });
   it('falls back when optional fields/expansions are missing', () => {
     expect(mapReportRow({ bcw_reportid: 'r2', createdon: '2026-06-04T10:00:00Z' })).toEqual({
       id: 'r2', address: '', description: '', createdOn: '2026-06-04T10:00:00Z',
-      status: 'New', animal: 'Unknown', reporter: '',
+      status: 755900000, animal: 'Unknown', reporter: '',
     });
   });
 });

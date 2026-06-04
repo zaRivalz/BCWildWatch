@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
 import { getMyReports } from '@/lib/dataverse';
 import { Card } from '@/components/ui/card';
-import { statusBadgeClass } from '@/lib/reportStatus';
+import { statusBadgeClass, statusLabel } from '@/lib/reportStatus';
 import type { ReportRow } from '@/lib/dataverse.helpers';
 
 export default async function MyReportsPage() {
@@ -24,7 +24,7 @@ export default async function MyReportsPage() {
               <div className="flex items-center justify-between gap-2">
                 <span className="font-semibold">{r.animal}</span>
                 <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusBadgeClass(r.status)}`}>
-                  {r.status}
+                  {statusLabel(r.status)}
                 </span>
               </div>
               <div className="text-sm">{r.address}</div>

@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       }
       const bytes = Buffer.from(await file.arrayBuffer());
       const url = await uploadMedia(file.name, bytes);
-      await linkMedia(reportId, url);
+      await linkMedia(reportId, url, file.name);
     }
     return NextResponse.json({ success: true, reportId });
   } catch {
