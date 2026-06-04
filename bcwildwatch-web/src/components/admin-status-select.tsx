@@ -1,16 +1,16 @@
 'use client';
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { REPORT_STATUSES, type ReportStatus } from '@/lib/reportStatus';
+import { REPORT_STATUS_OPTIONS } from '@/lib/reportStatus';
 
-export function AdminStatusSelect({ reportId, status }: { reportId: string; status: ReportStatus }) {
-  const [value, setValue] = useState<ReportStatus>(status);
+export function AdminStatusSelect({ reportId, status }: { reportId: string; status: number }) {
+  const [value, setValue] = useState<number>(status);
   const [error, setError] = useState(false);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
   async function onChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const next = e.target.value as ReportStatus;
+    const next = Number(e.target.value);
     const prev = value;
     setValue(next);
     setError(false);
@@ -35,7 +35,9 @@ export function AdminStatusSelect({ reportId, status }: { reportId: string; stat
       aria-invalid={error}
       className="rounded-md border bg-background px-2 py-1 text-sm aria-[invalid=true]:border-red-500"
     >
-      {REPORT_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+      {REPORT_STATUS_OPTIONS.map((o) => (
+        <option key={o.value} value={o.value}>{o.label}</option>
+      ))}
     </select>
   );
 }

@@ -1,19 +1,37 @@
-export const REPORT_STATUSES = ['New', 'Investigating', 'Resolved'] as const;
-export type ReportStatus = (typeof REPORT_STATUSES)[number];
-export const DEFAULT_STATUS: ReportStatus = 'New';
+// Mirrors the `bcw_status` Choice (option set) column on the bcw_report table in
+// Dataverse. Values are the live option-set integers; labels are their display text.
+export const REPORT_STATUS_OPTIONS = [
+  { value: 755900000, label: 'Submitted' },
+  { value: 755900001, label: 'Reviewed' },
+  { value: 755900002, label: 'In Progress' },
+  { value: 755900003, label: 'Resolved' },
+  { value: 755900004, label: 'Closed' },
+] as const;
 
-export function isValidStatus(s: unknown): s is ReportStatus {
-  return typeof s === 'string' && (REPORT_STATUSES as readonly string[]).includes(s);
+export type ReportStatusValue = (typeof REPORT_STATUS_OPTIONS)[number]['value'];
+export type ReportStatusLabel = (typeof REPORT_STATUS_OPTIONS)[number]['label'];
+
+export const DEFAULT_STATUS_VALUE: ReportStatusValue = 755900000; // Submitted
+
+export function isValidStatusValue(v: unknown): v is ReportStatusValue {
+  return typeof v === 'number' && REPORT_STATUS_OPTIONS.some((o) => o.value === v);
 }
 
-export function normalizeStatus(s: string | null | undefined): ReportStatus {
-  return isValidStatus(s) ? s : DEFAULT_STATUS;
+export function statusLabel(v: number | null | undefined): ReportStatusLabel {
+  return REPORT_STATUS_OPTIONS.find((o) => o.value === v)?.label ?? 'Submitted';
 }
 
-export function statusBadgeClass(s: ReportStatus): string {
-  switch (s) {
-    case 'New': return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300';
-    case 'Investigating': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300';
-    case 'Resolved': return 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300';
+export function statusBadgeClass(v: number | null | undefined): string {
+  switch (statusLabel(v)) {
+    case 'Submitted':
+      return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300';
+    case 'Reviewed':
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300';
+    case 'In Progress':
+      return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300';
+    case 'Resolved':
+      return 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300';
+    case 'Closed':
+      return 'bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
   }
 }

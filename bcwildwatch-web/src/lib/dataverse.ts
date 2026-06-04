@@ -2,7 +2,7 @@
 import 'server-only';
 import { requireEnv } from '@/lib/env';
 import { emailFilter, mapAnimal, mapReportRow, dataverseOrigin, isGuid, type Animal, type ReportRow } from '@/lib/dataverse.helpers';
-import { DEFAULT_STATUS, type ReportStatus } from '@/lib/reportStatus';
+import { DEFAULT_STATUS_VALUE, type ReportStatusValue } from '@/lib/reportStatus';
 
 let tokenCache: { token: string; expiresAt: number } | null = null;
 
@@ -69,32 +69,33 @@ export interface NewReport {
 export async function createReport(r: NewReport): Promise<string> {
   const body: Record<string, unknown> = {
     bcw_addressdescription: r.addressDescription,
-    bcw_description: r.description,
-    bcw_status: DEFAULT_STATUS,
-    'bcw_reporter@odata.bind': `/bcw_users(${r.userId})`,
+    cr04d_description: r.description,
+    bcw_status: DEFAULT_STATUS_VALUE,
+    'bcw_Reporter@odata.bind': `/bcw_users(${r.userId})`,
   };
-  if (r.animalId && r.animalId !== 'OTHER') body['bcw_animal@odata.bind'] = `/bcw_animals(${r.animalId})`;
-  if (r.latitude != null) body.bcw_latitude = r.latitude;
-  if (r.longitude != null) body.bcw_longitude = r.longitude;
+  if (r.animalId && r.animalId !== 'OTHER') body['bcw_Animal@odata.bind'] = `/bcw_animals(${r.animalId})`;
+  if (r.latitude != null) body.bcw_latitude = String(r.latitude);
+  if (r.longitude != null) body.bcw_longitude = String(r.longitude);
   const created = await dv('POST', '/api/data/v9.2/bcw_reports', body, { Prefer: 'return=representation' });
   return created.bcw_reportid;
 }
 
-export async function linkMedia(reportId: string, url: string): Promise<void> {
+export async function linkMedia(reportId: string, url: string, filename?: string): Promise<void> {
   await dv('POST', '/api/data/v9.2/bcw_medias', {
-    bcw_url: url,
-    'bcw_report@odata.bind': `/bcw_reports(${reportId})`,
+    bcw_fileurl: url,
+    ...(filename ? { bcw_filename: filename } : {}),
+    'bcw_LinkedReport@odata.bind': `/bcw_reports(${reportId})`,
   });
 }
 
 export async function getRecentReports(top = 10) {
   const r = await dv('GET',
-    `/api/data/v9.2/bcw_reports?$select=bcw_reportid,bcw_addressdescription,createdon&$orderby=createdon desc&$top=${top}&$expand=bcw_animal($select=bcw_name)`);
-  return (r?.value ?? []).map((row: { bcw_reportid: string; bcw_addressdescription: string; createdon: string; bcw_animal?: { bcw_name: string } }) => ({
+    `/api/data/v9.2/bcw_reports?$select=bcw_reportid,bcw_addressdescription,createdon&$orderby=createdon desc&$top=${top}&$expand=bcw_Animal($select=bcw_name)`);
+  return (r?.value ?? []).map((row: { bcw_reportid: string; bcw_addressdescription: string; createdon: string; bcw_Animal?: { bcw_name: string } }) => ({
     id: row.bcw_reportid,
     address: row.bcw_addressdescription,
     createdOn: row.createdon,
-    animal: row.bcw_animal?.bcw_name ?? 'Unknown',
+    animal: row.bcw_Animal?.bcw_name ?? 'Unknown',
   }));
 }
 
@@ -105,19 +106,19 @@ export async function getMyReports(email: string): Promise<ReportRow[]> {
   if (!isGuid(userId)) return [];
   const r = await dv('GET',
     `/api/data/v9.2/bcw_reports?$filter=_bcw_reporter_value eq ${userId}` +
-    `&$select=bcw_reportid,bcw_addressdescription,bcw_description,bcw_status,createdon` +
-    `&$orderby=createdon desc&$expand=bcw_animal($select=bcw_name)`);
+    `&$select=bcw_reportid,bcw_addressdescription,cr04d_description,bcw_status,createdon` +
+    `&$orderby=createdon desc&$expand=bcw_Animal($select=bcw_name)`);
   return (r?.value ?? []).map(mapReportRow);
 }
 
 export async function getAllReports(top = 100): Promise<ReportRow[]> {
   const r = await dv('GET',
-    `/api/data/v9.2/bcw_reports?$select=bcw_reportid,bcw_addressdescription,bcw_description,bcw_status,createdon` +
+    `/api/data/v9.2/bcw_reports?$select=bcw_reportid,bcw_addressdescription,cr04d_description,bcw_status,createdon` +
     `&$orderby=createdon desc&$top=${top}` +
-    `&$expand=bcw_animal($select=bcw_name),bcw_reporter($select=bcw_email)`);
+    `&$expand=bcw_Animal($select=bcw_name),bcw_Reporter($select=bcw_email)`);
   return (r?.value ?? []).map(mapReportRow);
 }
 
-export async function updateReportStatus(reportId: string, status: ReportStatus): Promise<void> {
+export async function updateReportStatus(reportId: string, status: ReportStatusValue): Promise<void> {
   await dv('PATCH', `/api/data/v9.2/bcw_reports(${reportId})`, { bcw_status: status });
 }
