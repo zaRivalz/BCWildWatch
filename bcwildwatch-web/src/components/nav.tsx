@@ -13,6 +13,7 @@ export async function Nav() {
       <nav className="flex items-center gap-4 text-sm">
         <Link href="/report">Report</Link>
         <Link href="/map">Live Map</Link>
+        <Link href="/safety">Safety Info</Link>
         {session?.user && <Link href="/my-reports">My Reports</Link>}
         {admin && <Link href="/admin">Admin</Link>}
         <ThemeToggle />

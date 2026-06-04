@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
       source: '/(.*)',
       headers: [{
         key: 'Content-Security-Policy',
-        value: "frame-src 'self' https://app.powerbi.com; frame-ancestors 'self';",
+        value: "frame-src 'self' https://app.powerbi.com https://copilotstudio.microsoft.com https://*.microsoft.com; frame-ancestors 'self';",
       }],
     }];
   },
