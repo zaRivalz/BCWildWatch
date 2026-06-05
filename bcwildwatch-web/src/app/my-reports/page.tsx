@@ -1,9 +1,12 @@
+import Link from 'next/link';
 import { auth } from '@/auth';
 import { getMyReports } from '@/lib/dataverse';
-import { Card } from '@/components/ui/card';
-import { Reveal } from '@/components/reveal';
-import { statusBadgeClass, statusLabel } from '@/lib/reportStatus';
+import { PageHead } from '@/components/page-head';
+import { Icon } from '@/components/icons';
+import { AnimalToken, kindForName } from '@/components/animal-glyph';
+import { StatusPill } from '@/components/status-pill';
 import { ReportPhoto } from '@/components/report-photo';
+import { relativeTime } from '@/lib/relativeTime';
 import type { ReportRow } from '@/lib/dataverse.helpers';
 
 export default async function MyReportsPage() {
@@ -11,33 +14,72 @@ export default async function MyReportsPage() {
   const email = session?.user?.email;
   let reports: ReportRow[] = [];
   if (email) {
-    try { reports = await getMyReports(email); } catch { reports = []; }
+    try {
+      reports = await getMyReports(email);
+    } catch {
+      reports = [];
+    }
   }
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-bold">My Reports</h1>
+    <div className="wrap">
+      <PageHead
+        eyebrow="My reports"
+        icon="eye"
+        title="Your sightings"
+        sub="Every sighting you've filed, and where it stands with campus security."
+      />
+
       {reports.length === 0 ? (
-        <p className="text-sm text-muted-foreground">You haven&apos;t submitted any reports yet.</p>
+        <div className="card center" style={{ padding: '56px 24px' }}>
+          <span
+            className="atoken"
+            style={{ width: 56, height: 56, borderRadius: 16, margin: '0 auto 16px' }}
+          >
+            <Icon.pawAlt size={28} />
+          </span>
+          <h3 style={{ marginBottom: 8 }}>No reports yet</h3>
+          <p className="muted" style={{ marginBottom: 22 }}>
+            When you report a sighting, it&apos;ll show up here so you can track it.
+          </p>
+          <Link href="/report" className="btn">
+            <Icon.plus size={17} sw={2.2} /> Report a sighting
+          </Link>
+        </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {reports.map((r, i) => (
-            <Reveal key={r.id} delay={i * 0.05}>
-              <Card className="space-y-2 p-4">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-semibold">{r.animal}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusBadgeClass(r.status)}`}>
-                    {statusLabel(r.status)}
-                  </span>
+        <div className="safety-cards">
+          {reports.map((r) => (
+            <article key={r.id} className="card safety-card rise">
+              <div className="safety-card__head">
+                <span className="safety-card__tok">
+                  <AnimalToken kind={kindForName(r.animal)} size={56} />
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h3>{r.animal}</h3>
+                  <StatusPill status={r.status} />
                 </div>
-                <div className="text-sm">{r.address}</div>
-                {r.description && <div className="text-sm text-muted-foreground">{r.description}</div>}
-                {r.mediaId && (
-                  <ReportPhoto mediaId={r.mediaId} alt={`${r.animal} photo`} size={80} />
-                )}
-                <div className="text-xs text-muted-foreground">{new Date(r.createdOn).toLocaleString()}</div>
-              </Card>
-            </Reveal>
+              </div>
+
+              <p className="trow__loc" style={{ marginBottom: 12 }}>
+                <Icon.pin size={15} /> {r.address}
+              </p>
+
+              {r.description && (
+                <p className="muted" style={{ fontSize: 14.5, marginBottom: 14 }}>
+                  {r.description}
+                </p>
+              )}
+
+              {r.mediaId && (
+                <div style={{ marginBottom: 14 }}>
+                  <ReportPhoto mediaId={r.mediaId} alt={`${r.animal} photo`} size={88} />
+                </div>
+              )}
+
+              <time className="muted" style={{ fontSize: 13 }}>
+                {relativeTime(r.createdOn)}
+              </time>
+            </article>
           ))}
         </div>
       )}

@@ -33,7 +33,13 @@ export function AdminStatusSelect({ reportId, status }: { reportId: string; stat
       onChange={onChange}
       disabled={pending}
       aria-invalid={error}
-      className="rounded-md border bg-background px-2 py-1 text-sm aria-[invalid=true]:border-red-500"
+      className="finput"
+      style={{
+        padding: '8px 12px',
+        fontSize: 13.5,
+        width: 'auto',
+        ...(error ? { borderColor: 'var(--red-600)' } : null),
+      }}
     >
       {REPORT_STATUS_OPTIONS.map((o) => (
         <option key={o.value} value={o.value}>{o.label}</option>
