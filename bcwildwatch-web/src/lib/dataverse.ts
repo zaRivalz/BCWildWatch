@@ -1,8 +1,10 @@
 // src/lib/dataverse.ts
 import 'server-only';
-import { requireEnv } from '@/lib/env';
+import { cache } from 'react';
+import { requireEnv, ADMIN_EMAILS } from '@/lib/env';
 import { emailFilter, mapAnimal, mapReportRow, dataverseOrigin, isGuid, type Animal, type ReportRow } from '@/lib/dataverse.helpers';
 import { DEFAULT_STATUS_VALUE, type ReportStatusValue } from '@/lib/reportStatus';
+import { DEFAULT_ROLE_VALUE, USER_ROLES, isValidRoleValue, type RoleValue } from '@/lib/roles';
 import { attachMediaToReports, type MediaRow } from '@/lib/media';
 
 let tokenCache: { token: string; expiresAt: number } | null = null;
@@ -56,19 +58,46 @@ export async function upsertUser(email: string, name: string): Promise<string> {
   const filter = encodeURIComponent(emailFilter(email));
   const found = await dv('GET', `/api/data/v9.2/bcw_users?$filter=${filter}&$select=bcw_userid&$top=1`);
   const existing = found?.value?.[0]?.bcw_userid;
-  if (existing) return existing;
+  if (existing) return existing; // never overwrite an existing user's role
   const created = await dv('POST', '/api/data/v9.2/bcw_users',
-    { bcw_email: email, bcw_name: name }, { Prefer: 'return=representation' });
+    { bcw_email: email, bcw_name: name, bcw_role: DEFAULT_ROLE_VALUE },
+    { Prefer: 'return=representation' });
   return created.bcw_userid;
 }
 
+/** Reads the user's `bcw_role` Choice value, defaulting to Student if absent. */
+export const getUserRole = cache(async (email: string): Promise<RoleValue> => {
+  const filter = encodeURIComponent(emailFilter(email));
+  const found = await dv('GET',
+    `/api/data/v9.2/bcw_users?$filter=${filter}&$select=bcw_role&$top=1`);
+  const role = found?.value?.[0]?.bcw_role;
+  return isValidRoleValue(role) ? role : DEFAULT_ROLE_VALUE;
+});
+
+/**
+ * Effective role for access checks. Emails in ADMIN_EMAILS are always treated as
+ * Admin (a bootstrap so the team can't be locked out of the admin panel before
+ * any role is assigned in Dataverse).
+ */
+export const getEffectiveRole = cache(async (email: string | null | undefined): Promise<RoleValue> => {
+  if (!email) return DEFAULT_ROLE_VALUE;
+  if (ADMIN_EMAILS.includes(email.toLowerCase())) return USER_ROLES.Admin;
+  try {
+    return await getUserRole(email);
+  } catch {
+    return DEFAULT_ROLE_VALUE;
+  }
+});
+
 export interface NewReport {
   userId: string; animalId: string | null;
+  campus: string;
   addressDescription: string; description: string;
   latitude: number | null; longitude: number | null;
 }
 export async function createReport(r: NewReport): Promise<string> {
   const body: Record<string, unknown> = {
+    bcw_location: r.campus,
     bcw_addressdescription: r.addressDescription,
     bcw_description: r.description,
     bcw_status: DEFAULT_STATUS_VALUE,
@@ -107,7 +136,7 @@ export async function getMyReports(email: string): Promise<ReportRow[]> {
   if (!isGuid(userId)) return [];
   const r = await dv('GET',
     `/api/data/v9.2/bcw_reports?$filter=_bcw_reporter_value eq ${userId}` +
-    `&$select=bcw_reportid,bcw_addressdescription,bcw_description,bcw_status,createdon` +
+    `&$select=bcw_reportid,bcw_location,bcw_addressdescription,bcw_description,bcw_status,createdon` +
     `&$orderby=createdon desc&$expand=bcw_Animal($select=bcw_name)`);
   const reports = (r?.value ?? []).map(mapReportRow);
   return withMedia(reports);
@@ -115,7 +144,7 @@ export async function getMyReports(email: string): Promise<ReportRow[]> {
 
 export async function getAllReports(top = 100): Promise<ReportRow[]> {
   const r = await dv('GET',
-    `/api/data/v9.2/bcw_reports?$select=bcw_reportid,bcw_addressdescription,bcw_description,bcw_status,createdon` +
+    `/api/data/v9.2/bcw_reports?$select=bcw_reportid,bcw_location,bcw_addressdescription,bcw_description,bcw_status,createdon` +
     `&$orderby=createdon desc&$top=${top}` +
     `&$expand=bcw_Animal($select=bcw_name),bcw_Reporter($select=bcw_email)`);
   const reports = (r?.value ?? []).map(mapReportRow);
@@ -162,4 +191,24 @@ export async function getMediaFileUrl(mediaId: string): Promise<{ fileUrl: strin
 
 export async function updateReportStatus(reportId: string, status: ReportStatusValue): Promise<void> {
   await dv('PATCH', `/api/data/v9.2/bcw_reports(${reportId})`, { bcw_status: status });
+}
+
+/**
+ * Deletes a report and its linked media records. The underlying SharePoint files
+ * are left in place (we only remove the Dataverse rows that reference them).
+ */
+export async function deleteReport(reportId: string): Promise<void> {
+  if (!isGuid(reportId)) throw new Error('Invalid report id');
+  // Remove linked media rows first so they don't dangle after the report is gone.
+  try {
+    const media = await getMediaForReports([reportId]);
+    await Promise.all(
+      media
+        .filter((m) => isGuid(m.mediaId))
+        .map((m) => dv('DELETE', `/api/data/v9.2/bcw_medias(${m.mediaId})`)),
+    );
+  } catch {
+    // A media cleanup failure must not block deleting the report itself.
+  }
+  await dv('DELETE', `/api/data/v9.2/bcw_reports(${reportId})`);
 }

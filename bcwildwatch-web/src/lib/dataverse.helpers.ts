@@ -31,6 +31,7 @@ export function mapAnimal(row: { bcw_animalid: string; bcw_name: string }): Anim
 
 export interface ReportRow {
   id: string;
+  location: string; // campus name (bcw_location)
   address: string;
   description: string;
   createdOn: string;
@@ -43,6 +44,7 @@ export interface ReportRow {
 
 export function mapReportRow(row: {
   bcw_reportid: string;
+  bcw_location?: string | null;
   bcw_addressdescription?: string | null;
   bcw_description?: string | null;
   createdon: string;
@@ -52,6 +54,7 @@ export function mapReportRow(row: {
 }): ReportRow {
   return {
     id: row.bcw_reportid,
+    location: row.bcw_location ?? '',
     address: row.bcw_addressdescription ?? '',
     description: row.bcw_description ?? '',
     createdOn: row.createdon,

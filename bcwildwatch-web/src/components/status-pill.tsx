@@ -9,12 +9,10 @@ export type StatusTone = 'new' | 'progress' | 'resolved';
 export function statusTone(value: number | null | undefined): StatusTone {
   switch (statusLabel(value)) {
     case 'Submitted':
-    case 'Reviewed':
       return 'new';
     case 'In Progress':
       return 'progress';
     case 'Resolved':
-    case 'Closed':
       return 'resolved';
     default:
       return 'new';

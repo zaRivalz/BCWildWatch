@@ -2,10 +2,8 @@
 // Dataverse. Values are the live option-set integers; labels are their display text.
 export const REPORT_STATUS_OPTIONS = [
   { value: 755900000, label: 'Submitted' },
-  { value: 755900001, label: 'Reviewed' },
   { value: 755900002, label: 'In Progress' },
   { value: 755900003, label: 'Resolved' },
-  { value: 755900004, label: 'Closed' },
 ] as const;
 
 export type ReportStatusValue = (typeof REPORT_STATUS_OPTIONS)[number]['value'];
@@ -25,13 +23,9 @@ export function statusBadgeClass(v: number | null | undefined): string {
   switch (statusLabel(v)) {
     case 'Submitted':
       return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300';
-    case 'Reviewed':
-      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300';
     case 'In Progress':
       return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300';
     case 'Resolved':
       return 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300';
-    case 'Closed':
-      return 'bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
   }
 }

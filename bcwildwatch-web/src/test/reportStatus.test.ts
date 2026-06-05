@@ -6,7 +6,7 @@ import {
 describe('reportStatus', () => {
   it('mirrors the bcw_status Choice options with Submitted as default', () => {
     expect(REPORT_STATUS_OPTIONS.map((o) => o.label)).toEqual([
-      'Submitted', 'Reviewed', 'In Progress', 'Resolved', 'Closed',
+      'Submitted', 'In Progress', 'Resolved',
     ]);
     expect(DEFAULT_STATUS_VALUE).toBe(755900000);
     expect(statusLabel(DEFAULT_STATUS_VALUE)).toBe('Submitted');

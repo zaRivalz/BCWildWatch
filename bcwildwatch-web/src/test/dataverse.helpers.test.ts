@@ -24,6 +24,7 @@ describe('mapReportRow', () => {
   it('maps a full row including expanded animal + reporter', () => {
     expect(mapReportRow({
       bcw_reportid: 'r1',
+      bcw_location: 'Pretoria',
       bcw_addressdescription: 'Block A',
       bcw_description: 'big snake',
       createdon: '2026-06-04T10:00:00Z',
@@ -31,14 +32,14 @@ describe('mapReportRow', () => {
       bcw_Animal: { bcw_name: 'Snake' },
       bcw_Reporter: { bcw_email: 'a@belgiumcampus.ac.za' },
     })).toEqual({
-      id: 'r1', address: 'Block A', description: 'big snake',
+      id: 'r1', location: 'Pretoria', address: 'Block A', description: 'big snake',
       createdOn: '2026-06-04T10:00:00Z', status: 755900002,
       animal: 'Snake', reporter: 'a@belgiumcampus.ac.za',
     });
   });
   it('falls back when optional fields/expansions are missing', () => {
     expect(mapReportRow({ bcw_reportid: 'r2', createdon: '2026-06-04T10:00:00Z' })).toEqual({
-      id: 'r2', address: '', description: '', createdOn: '2026-06-04T10:00:00Z',
+      id: 'r2', location: '', address: '', description: '', createdOn: '2026-06-04T10:00:00Z',
       status: 755900000, animal: 'Unknown', reporter: '',
     });
   });

@@ -36,7 +36,7 @@ describe('contentTypeForFilename', () => {
 
 describe('attachMediaToReports', () => {
   const base: ReportRow = {
-    id: 'r1', address: 'A', description: '', createdOn: '2026-06-04T10:00:00Z',
+    id: 'r1', location: 'Pretoria', address: 'A', description: '', createdOn: '2026-06-04T10:00:00Z',
     status: 755900000, animal: 'Snake', reporter: 'a@b.com',
   };
   const reports: ReportRow[] = [base, { ...base, id: 'r2' }, { ...base, id: 'r3' }];

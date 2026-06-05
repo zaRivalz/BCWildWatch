@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
-import { isAdmin } from '@/lib/authPolicy';
-import { getAllReports } from '@/lib/dataverse';
+import { getAllReports, getEffectiveRole } from '@/lib/dataverse';
+import { canViewAdmin, canEditReports, canDeleteReports } from '@/lib/roles';
 import { AdminReportsTable } from '@/components/admin-reports-table';
 import { Icon } from '@/components/icons';
 import { statusTone } from '@/components/status-pill';
@@ -9,7 +9,10 @@ import type { ReportRow } from '@/lib/dataverse.helpers';
 
 export default async function AdminPage() {
   const session = await auth();
-  if (!isAdmin(session?.user?.email)) redirect('/');
+  const role = await getEffectiveRole(session?.user?.email);
+  if (!canViewAdmin(role)) redirect('/');
+  const canEdit = canEditReports(role);
+  const canDelete = canDeleteReports(role);
 
   const dashboardUrl = process.env.POWERBI_DASHBOARD_URL;
   let reports: ReportRow[] = [];
@@ -57,7 +60,7 @@ export default async function AdminPage() {
         ))}
       </div>
 
-      <AdminReportsTable reports={reports} />
+      <AdminReportsTable reports={reports} canEdit={canEdit} canDelete={canDelete} />
 
       {dashboardUrl && (
         <section style={{ marginTop: 28 }}>
