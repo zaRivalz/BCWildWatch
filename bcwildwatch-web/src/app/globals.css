@@ -833,6 +833,15 @@ html.theme-switching, html.theme-switching * { transition: none !important; }
 .campus-opt:hover { border-color: var(--primary-brand); color: var(--text); }
 .campus-opt.is-sel { border-color: var(--primary-brand); background: var(--primary-tint); color: var(--primary-brand); }
 
+/* GPS-only location (campus auto-detected) */
+.geo-detected { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 14px; border: 1.5px solid var(--primary-brand); background: var(--primary-tint); }
+.geo-detected__ico { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: none; border-radius: 12px; background: var(--surface); color: var(--primary-brand); }
+.geo-detected__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.geo-detected__body b { font-family: var(--font-head); font-size: 15.5px; color: var(--primary-brand); }
+.geo-detected__body .muted { font-size: 12.5px; }
+.geo-prompt { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 14px; border: 1.5px dashed var(--border-strong); background: var(--surface); }
+.geo-prompt p { margin: 0; font-size: 13.5px; }
+
 /* ============================================================
    Responsive (responsive.css)
    ============================================================ */

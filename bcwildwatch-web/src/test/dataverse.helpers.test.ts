@@ -15,8 +15,14 @@ describe('dataverse helpers', () => {
     const f = emailFilter("a'b@x.com");
     expect(f).toContain("bcw_email eq 'a''b@x.com'");
   });
-  it('maps a raw animal row to {id,name}', () => {
-    expect(mapAnimal({ bcw_animalid: '1', bcw_name: 'Snake' })).toEqual({ id: '1', name: 'Snake' });
+  it('maps a raw animal row to {id,name,priority}', () => {
+    expect(mapAnimal({ bcw_animalid: '1', bcw_name: 'Snake' })).toEqual({ id: '1', name: 'Snake', priority: null });
+  });
+  it('maps the bcw_priority choice to a risk tone', () => {
+    expect(mapAnimal({ bcw_animalid: '1', bcw_name: 'Snake', bcw_priority: 755900002 }))
+      .toEqual({ id: '1', name: 'Snake', priority: 'high' });
+    expect(mapAnimal({ bcw_animalid: '2', bcw_name: 'Monkey', bcw_priority: 755900000 }))
+      .toEqual({ id: '2', name: 'Monkey', priority: 'low' });
   });
 });
 

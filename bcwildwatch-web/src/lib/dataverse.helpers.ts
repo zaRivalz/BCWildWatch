@@ -1,4 +1,6 @@
 import { DEFAULT_STATUS_VALUE } from '@/lib/reportStatus';
+import { priorityTone } from '@/lib/animalPriority';
+import type { RiskTone } from '@/components/animal-glyph';
 
 const GUID_RE = /^\{?[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\}?$/;
 
@@ -23,10 +25,19 @@ export function emailFilter(email: string): string {
   return `bcw_email eq '${escapeODataString(email)}'`;
 }
 
-export interface Animal { id: string; name: string; }
+export interface Animal {
+  id: string;
+  name: string;
+  /** Risk level pulled from the bcw_priority choice; null until set in Dataverse. */
+  priority: RiskTone | null;
+}
 
-export function mapAnimal(row: { bcw_animalid: string; bcw_name: string }): Animal {
-  return { id: row.bcw_animalid, name: row.bcw_name };
+export function mapAnimal(row: {
+  bcw_animalid: string;
+  bcw_name: string;
+  bcw_priority?: number | null;
+}): Animal {
+  return { id: row.bcw_animalid, name: row.bcw_name, priority: priorityTone(row.bcw_priority) };
 }
 
 export interface ReportRow {

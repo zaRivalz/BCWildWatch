@@ -14,7 +14,12 @@ export default async function AdminPage() {
   const canEdit = canEditReports(role);
   const canDelete = canDeleteReports(role);
 
-  const dashboardUrl = process.env.POWERBI_DASHBOARD_URL;
+  // Power BI publish-to-web report (a public, embeddable link). Overridable via
+  // env for other environments, but defaults to the live dashboard so it renders
+  // without extra deployment config.
+  const dashboardUrl =
+    process.env.POWERBI_DASHBOARD_URL ||
+    'https://app.powerbi.com/view?r=eyJrIjoiOTVkMjM4ZjItYjRiZi00ZDdhLWFhYmEtNDllN2UwMmE0YTFlIiwidCI6ImVhMWE5MDliLTY2MDAtNGEyNS04MmE1LTBjNmVkN2QwNTEzYiIsImMiOjl9';
   let reports: ReportRow[] = [];
   try {
     reports = await getAllReports(100);

@@ -23,8 +23,20 @@ describe('validateReport', () => {
     const r = validateReport({ ...base, description: '' });
     expect(r.ok).toBe(false);
   });
-  it('coerces non-number coordinates to null', () => {
+  it('rejects non-number coordinates (GPS required)', () => {
     const r = validateReport({ ...base, latitude: 'x' as unknown as number });
-    expect(r.ok && r.value.latitude).toBe(null);
+    expect(r.ok).toBe(false);
+  });
+  it('rejects missing coordinates (GPS required)', () => {
+    const r = validateReport({ ...base, latitude: null, longitude: null });
+    expect(r.ok).toBe(false);
+  });
+  it('rejects out-of-range coordinates', () => {
+    const r = validateReport({ ...base, latitude: 200, longitude: 400 });
+    expect(r.ok).toBe(false);
+  });
+  it('keeps coordinates on a valid payload', () => {
+    const r = validateReport(base);
+    expect(r.ok && r.value.latitude).toBe(-25.7);
   });
 });
