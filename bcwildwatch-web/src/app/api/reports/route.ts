@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
   const form = await req.formData();
   const v = validateReport({
     animalId: (form.get('animalId') as string) || null,
+    campus: (form.get('campus') as string) ?? '',
     addressDescription: (form.get('addressDescription') as string) ?? '',
     description: (form.get('description') as string) ?? '',
     latitude: form.get('latitude') ? Number(form.get('latitude')) : null,

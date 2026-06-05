@@ -60,6 +60,11 @@ export default async function MyReportsPage() {
                 </div>
               </div>
 
+              {r.location && (
+                <p className="trow__loc" style={{ marginBottom: 6 }}>
+                  <Icon.map size={15} /> {r.location}
+                </p>
+              )}
               <p className="trow__loc" style={{ marginBottom: 12 }}>
                 <Icon.pin size={15} /> {r.address}
               </p>

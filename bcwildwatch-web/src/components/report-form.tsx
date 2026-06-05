@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { Icon } from '@/components/icons';
 import { AnimalToken, kindForName, type RiskTone } from '@/components/animal-glyph';
+import { CAMPUSES, nearestCampus } from '@/lib/campus';
 
 interface Animal {
   id: string;
@@ -22,6 +23,7 @@ export function ReportForm() {
   const [animalId, setAnimalId] = useState<string>('');
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
+  const [campus, setCampus] = useState<string>('');
   const [address, setAddress] = useState('');
   const [description, setDescription] = useState('');
   const [photo, setPhoto] = useState<File | null>(null);
@@ -56,8 +58,10 @@ export function ReportForm() {
     navigator.geolocation.getCurrentPosition(
       (p) => {
         setCoords({ lat: p.coords.latitude, lng: p.coords.longitude });
+        const detected = nearestCampus(p.coords.latitude, p.coords.longitude);
+        setCampus(detected.name);
         setLocating(false);
-        toast.success('Location captured.');
+        toast.success(`Location captured — ${detected.name} campus.`);
       },
       () => {
         setLocating(false);
@@ -86,6 +90,10 @@ export function ReportForm() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!campus) {
+      toast.error('Please choose a campus or use your location.');
+      return;
+    }
     if (!address.trim() || !description.trim()) {
       toast.error('Please add a location and description.');
       return;
@@ -93,6 +101,7 @@ export function ReportForm() {
     setSubmitting(true);
     const form = new FormData();
     if (animalId) form.set('animalId', animalId);
+    form.set('campus', campus);
     form.set('addressDescription', address);
     form.set('description', description);
     if (coords) {
@@ -201,7 +210,47 @@ export function ReportForm() {
       <div className="fblock">
         <div className="flabel">
           <span className="flabel__n">2</span>
-          <span className="flabel__t">Where is it?</span>
+          <span className="flabel__t">Which campus?</span>
+          <span className="flabel__hint">Required</span>
+        </div>
+        <div className="campus-pick" role="group" aria-label="Campus">
+          {CAMPUSES.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              className={`campus-opt${campus === c.name ? ' is-sel' : ''}`}
+              onClick={() => setCampus(c.name)}
+              aria-pressed={campus === c.name}
+            >
+              <Icon.pin size={15} />
+              {c.name}
+            </button>
+          ))}
+        </div>
+        <div className="chip-row">
+          <button
+            type="button"
+            className="chip chip--gps"
+            onClick={captureLocation}
+            disabled={locating}
+          >
+            <Icon.pin size={14} />
+            {locating ? 'Locating…' : 'Use my location to detect campus'}
+          </button>
+          {coords && (
+            <span className="chip is-on">
+              <Icon.check size={13} sw={2.4} />
+              {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Address */}
+      <div className="fblock">
+        <div className="flabel">
+          <span className="flabel__n">3</span>
+          <span className="flabel__t">Where exactly?</span>
           <span className="flabel__hint">Required</span>
         </div>
         <div className="finput-wrap">
@@ -216,29 +265,12 @@ export function ReportForm() {
             required
           />
         </div>
-        <div className="chip-row">
-          <button
-            type="button"
-            className="chip chip--gps"
-            onClick={captureLocation}
-            disabled={locating}
-          >
-            <Icon.pin size={14} />
-            {coords ? 'Location captured' : locating ? 'Locating…' : 'Use my GPS location'}
-          </button>
-          {coords && (
-            <span className="chip is-on">
-              <Icon.check size={13} sw={2.4} />
-              {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
-            </span>
-          )}
-        </div>
       </div>
 
       {/* Description */}
       <div className="fblock">
         <div className="flabel">
-          <span className="flabel__n">3</span>
+          <span className="flabel__n">4</span>
           <span className="flabel__t">Describe it</span>
           <span className="flabel__hint">Required</span>
         </div>
@@ -254,7 +286,7 @@ export function ReportForm() {
       {/* Photo */}
       <div className="fblock">
         <div className="flabel">
-          <span className="flabel__n">4</span>
+          <span className="flabel__n">5</span>
           <span className="flabel__t">Add a photo</span>
           <span className="flabel__hint">Optional</span>
         </div>

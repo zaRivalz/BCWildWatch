@@ -1,11 +1,13 @@
 import { auth, signOut } from '@/auth';
-import { isAdmin } from '@/lib/authPolicy';
+import { getEffectiveRole } from '@/lib/dataverse';
+import { canViewAdmin } from '@/lib/roles';
 import { NavBar, type NavLink } from '@/components/nav-bar';
 
 export async function Nav() {
   const session = await auth();
-  const admin = isAdmin(session?.user?.email);
   const authed = Boolean(session?.user);
+  const role = await getEffectiveRole(session?.user?.email);
+  const showAdmin = canViewAdmin(role);
 
   const links: NavLink[] = [
     { href: '/', label: 'Home', icon: 'home' },
@@ -14,7 +16,7 @@ export async function Nav() {
     { href: '/safety', label: 'Safety', icon: 'shield' },
   ];
   if (authed) links.push({ href: '/my-reports', label: 'My Reports', icon: 'eye' });
-  if (admin) links.push({ href: '/admin', label: 'Admin', icon: 'grid' });
+  if (showAdmin) links.push({ href: '/admin', label: 'Admin', icon: 'grid' });
 
   async function handleSignOut() {
     'use server';
