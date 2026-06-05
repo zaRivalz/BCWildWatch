@@ -44,10 +44,7 @@ export function ReportForm() {
     [preview],
   );
 
-  const selectedName =
-    animalId === 'OTHER'
-      ? 'Other / not listed'
-      : animals.find((a) => a.id === animalId)?.name ?? '';
+  const selectedName = animals.find((a) => a.id === animalId)?.name ?? '';
   const selectedRisk: RiskTone = selectedName ? kindForName(selectedName).risk : 'low';
 
   function captureLocation() {
@@ -181,21 +178,6 @@ export function ReportForm() {
               </button>
             );
           })}
-          <button
-            type="button"
-            className={`animal-pick${animalId === 'OTHER' ? ' is-sel' : ''}`}
-            style={{ ['--ah' as string]: '#6B8678' }}
-            onClick={() => setAnimalId('OTHER')}
-            aria-pressed={animalId === 'OTHER'}
-          >
-            {animalId === 'OTHER' && (
-              <span className="animal-pick__check">
-                <Icon.check size={12} sw={2.6} />
-              </span>
-            )}
-            <AnimalToken name="other" size={50} />
-            <span className="animal-pick__lbl">Other</span>
-          </button>
         </div>
 
         <div className="risk-select">

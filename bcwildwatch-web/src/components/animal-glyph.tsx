@@ -37,6 +37,38 @@ export const AnimalGlyph = {
       <path d="M10 12.5h.01M14 12.5h.01M11 15h2" />
     </svg>
   ),
+  spider: ({ size = 26 }: GlyphProps) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <ellipse cx="12" cy="13" rx="3" ry="3.6" />
+      <circle cx="12" cy="8" r="1.8" />
+      <path d="M9 11 4 8M9 13H3.5M9 15l-4.5 3M15 11l5-3M15 13h5.5M15 15l4.5 3" />
+    </svg>
+  ),
+  lizard: ({ size = 26 }: GlyphProps) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 16c2 0 2.5-2 4.5-2s2 2 4 2 2.5-3 4.5-3c2.5 0 3.5 2.5 2 4.5" />
+      <circle cx="6.5" cy="8" r="2.3" />
+      <path d="M5.7 7.5h.01" />
+      <path d="M8.6 8c2.4.4 3.6 2 4 4" />
+    </svg>
+  ),
+  ant: ({ size = 26 }: GlyphProps) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="6.5" cy="12" r="2" />
+      <circle cx="12" cy="12" r="2.3" />
+      <circle cx="18" cy="12" r="2.6" />
+      <path d="M5 9.5 3.5 7.5M5 14.5l-1.5 2M11 9.7 10 7.5M11 14.3l-1 2M16.5 9.8 15.5 7.8M16.5 14.2l-1 2" />
+      <path d="M5.4 10.3 4 9M5.4 13.7 4 15" />
+    </svg>
+  ),
+  roach: ({ size = 26 }: GlyphProps) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <ellipse cx="12" cy="13" rx="4" ry="6" />
+      <path d="M12 8.5V18" />
+      <path d="M9.5 6 7.5 3.5M14.5 6l2-2.5" />
+      <path d="M8 10 4.5 8.5M8 13H4M8 16l-3.5 1.5M16 10l3.5-1.5M16 13h4M16 16l3.5 1.5" />
+    </svg>
+  ),
   other: ({ size = 26 }: GlyphProps) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="7" cy="9" r="1.6" />
@@ -62,6 +94,10 @@ export const ANIMAL_KINDS: Record<AnimalGlyphId, AnimalKind> = {
   bee: { id: 'bee', label: 'Bee swarm', risk: 'medium', hue: '#D97706' },
   dog: { id: 'dog', label: 'Stray dog', risk: 'medium', hue: '#0E7490' },
   monkey: { id: 'monkey', label: 'Monkey', risk: 'low', hue: '#7C3AED' },
+  spider: { id: 'spider', label: 'Spider', risk: 'medium', hue: '#9333EA' },
+  lizard: { id: 'lizard', label: 'Lizard', risk: 'low', hue: '#0D9488' },
+  ant: { id: 'ant', label: 'Ant colony', risk: 'low', hue: '#B45309' },
+  roach: { id: 'roach', label: 'Cockroach', risk: 'low', hue: '#A16207' },
   other: { id: 'other', label: 'Other', risk: 'low', hue: '#6B8678' },
 };
 
@@ -72,6 +108,10 @@ export function kindForName(name: string | null | undefined): AnimalKind {
   if (/bee|wasp|swarm|hive|hornet/.test(s)) return ANIMAL_KINDS.bee;
   if (/dog|stray|canine|puppy/.test(s)) return ANIMAL_KINDS.dog;
   if (/monkey|baboon|ape|primate|vervet/.test(s)) return ANIMAL_KINDS.monkey;
+  if (/spider|arachnid|tarantula|widow/.test(s)) return ANIMAL_KINDS.spider;
+  if (/lizard|gecko|skink|chameleon|iguana|reptile/.test(s)) return ANIMAL_KINDS.lizard;
+  if (/ant\b|ants|colony|termite/.test(s)) return ANIMAL_KINDS.ant;
+  if (/roach|cockroach|beetle|bug|insect/.test(s)) return ANIMAL_KINDS.roach;
   return ANIMAL_KINDS.other;
 }
 
