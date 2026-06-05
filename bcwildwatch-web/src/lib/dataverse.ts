@@ -74,7 +74,7 @@ export async function createReport(r: NewReport): Promise<string> {
     bcw_status: DEFAULT_STATUS_VALUE,
     'bcw_Reporter@odata.bind': `/bcw_users(${r.userId})`,
   };
-  if (r.animalId && r.animalId !== 'OTHER') body['bcw_Animal@odata.bind'] = `/bcw_animals(${r.animalId})`;
+  if (r.animalId) body['bcw_Animal@odata.bind'] = `/bcw_animals(${r.animalId})`;
   if (r.latitude != null) body.bcw_latitude = String(r.latitude);
   if (r.longitude != null) body.bcw_longitude = String(r.longitude);
   const created = await dv('POST', '/api/data/v9.2/bcw_reports', body, { Prefer: 'return=representation' });
