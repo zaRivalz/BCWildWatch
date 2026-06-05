@@ -1,7 +1,19 @@
 import Link from 'next/link';
 import { Icon } from '@/components/icons';
+import { MapFrame } from '@/components/map-frame';
+import { getRecentReports, type RecentReport } from '@/lib/dataverse';
+import { relativeTime } from '@/lib/relativeTime';
 
-export function Hero() {
+export async function Hero() {
+  const mapUrl = process.env.POWERBI_MAP_URL;
+
+  let latest: RecentReport | null = null;
+  try {
+    latest = (await getRecentReports(1))[0] ?? null;
+  } catch {
+    latest = null;
+  }
+
   return (
     <section className="hero">
       <div className="aurora" aria-hidden>
@@ -50,18 +62,27 @@ export function Hero() {
 
           <div className="hero__visual rise">
             <div className="hero__map card">
-              <div className="ph">
-                <span className="ph__tag">campus-map.live</span>
-              </div>
-              <div className="hero__overlay card">
-                <span className="badge risk-high">
-                  <span className="dot" /> Snake
-                </span>
-                <div className="meta">
-                  <b>Building 4 — courtyard</b>
-                  <span>Reported 4 min ago</span>
+              {mapUrl ? (
+                <MapFrame src={mapUrl} title="Live campus sightings map" />
+              ) : (
+                <div className="ph">
+                  <span className="ph__tag">campus-map.live</span>
                 </div>
-              </div>
+              )}
+              {latest && (
+                <div className="hero__overlay card">
+                  <span className={`badge risk-${latest.risk}`}>
+                    <span className="dot" /> {latest.animal}
+                  </span>
+                  <div className="meta">
+                    <b>
+                      {latest.address}
+                      {latest.campus ? ` — ${latest.campus}` : ''}
+                    </b>
+                    <span>Reported {relativeTime(latest.createdOn)}</span>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="hero__float card">
               <span className="ico">

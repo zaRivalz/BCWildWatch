@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { Icon } from '@/components/icons';
 import { AnimalToken, kindForName, type RiskTone } from '@/components/animal-glyph';
-import { CAMPUSES, nearestCampus } from '@/lib/campus';
+import { nearestCampus } from '@/lib/campus';
 
 interface Animal {
   id: string;
   name: string;
+  priority?: RiskTone | null;
 }
 
 const RISK_SEG: { tone: RiskTone; label: string }[] = [
@@ -23,6 +24,7 @@ export function ReportForm() {
   const [animalId, setAnimalId] = useState<string>('');
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
+  const [geoDenied, setGeoDenied] = useState(false);
   const [campus, setCampus] = useState<string>('');
   const [address, setAddress] = useState('');
   const [description, setDescription] = useState('');
@@ -46,12 +48,17 @@ export function ReportForm() {
     [preview],
   );
 
-  const selectedName = animals.find((a) => a.id === animalId)?.name ?? '';
-  const selectedRisk: RiskTone = selectedName ? kindForName(selectedName).risk : 'low';
+  const selected = animals.find((a) => a.id === animalId);
+  const selectedName = selected?.name ?? '';
+  // Prefer the level set in Dataverse (bcw_priority); fall back to the built-in
+  // mapping until every animal has a priority assigned.
+  const selectedRisk: RiskTone =
+    selected?.priority ?? (selectedName ? kindForName(selectedName).risk : 'low');
 
-  function captureLocation() {
+  function captureLocation(opts?: { silent?: boolean }) {
     if (!('geolocation' in navigator)) {
-      toast.error('Location is not available on this device.');
+      setGeoDenied(true);
+      if (!opts?.silent) toast.error('Location is not available on this device.');
       return;
     }
     setLocating(true);
@@ -60,15 +67,25 @@ export function ReportForm() {
         setCoords({ lat: p.coords.latitude, lng: p.coords.longitude });
         const detected = nearestCampus(p.coords.latitude, p.coords.longitude);
         setCampus(detected.name);
+        setGeoDenied(false);
         setLocating(false);
         toast.success(`Location captured — ${detected.name} campus.`);
       },
       () => {
         setLocating(false);
-        toast.error('Could not get your location.');
+        setGeoDenied(true);
+        if (!opts?.silent) toast.error('Could not get your location.');
       },
     );
   }
+
+  // GPS is mandatory — request it as soon as the form loads so the campus can be
+  // auto-detected from the user's coordinates (they cannot pick it manually).
+  // Deferred a tick so the initial setState happens outside the effect body.
+  useEffect(() => {
+    const t = setTimeout(() => captureLocation({ silent: true }), 0);
+    return () => clearTimeout(t);
+  }, []);
 
   function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0] ?? null;
@@ -90,8 +107,14 @@ export function ReportForm() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!coords) {
+      toast.error('Your GPS location is required to submit a report.');
+      captureLocation();
+      return;
+    }
     if (!campus) {
-      toast.error('Please choose a campus or use your location.');
+      toast.error('We could not detect your campus. Please try locating again.');
+      captureLocation();
       return;
     }
     if (!address.trim() || !description.trim()) {
@@ -104,10 +127,8 @@ export function ReportForm() {
     form.set('campus', campus);
     form.set('addressDescription', address);
     form.set('description', description);
-    if (coords) {
-      form.set('latitude', String(coords.lat));
-      form.set('longitude', String(coords.lng));
-    }
+    form.set('latitude', String(coords.lat));
+    form.set('longitude', String(coords.lng));
     if (photo) form.set('photo', photo);
 
     const res = await fetch('/api/reports', { method: 'POST', body: form });
@@ -206,44 +227,48 @@ export function ReportForm() {
         </div>
       </div>
 
-      {/* Location */}
+      {/* Location — GPS only, campus auto-detected (no manual choice) */}
       <div className="fblock">
         <div className="flabel">
           <span className="flabel__n">2</span>
-          <span className="flabel__t">Which campus?</span>
+          <span className="flabel__t">Your location</span>
           <span className="flabel__hint">Required</span>
         </div>
-        <div className="campus-pick" role="group" aria-label="Campus">
-          {CAMPUSES.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              className={`campus-opt${campus === c.name ? ' is-sel' : ''}`}
-              onClick={() => setCampus(c.name)}
-              aria-pressed={campus === c.name}
-            >
-              <Icon.pin size={15} />
-              {c.name}
-            </button>
-          ))}
-        </div>
-        <div className="chip-row">
-          <button
-            type="button"
-            className="chip chip--gps"
-            onClick={captureLocation}
-            disabled={locating}
-          >
-            <Icon.pin size={14} />
-            {locating ? 'Locating…' : 'Use my location to detect campus'}
-          </button>
-          {coords && (
-            <span className="chip is-on">
-              <Icon.check size={13} sw={2.4} />
-              {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
+
+        {coords ? (
+          <div className="geo-detected">
+            <span className="geo-detected__ico">
+              <Icon.pin size={18} />
             </span>
-          )}
-        </div>
+            <div className="geo-detected__body">
+              <b>{campus} campus</b>
+              <span className="muted">
+                Auto-detected from your location · {coords.lat.toFixed(4)},{' '}
+                {coords.lng.toFixed(4)}
+              </span>
+            </div>
+            <span className="chip is-on">
+              <Icon.check size={13} sw={2.4} /> Located
+            </span>
+          </div>
+        ) : (
+          <div className="geo-prompt">
+            <p className="muted">
+              {geoDenied
+                ? 'We need your location to detect your campus. Please allow location access in your browser, then tap below.'
+                : 'Detecting your campus from your location…'}
+            </p>
+            <button
+              type="button"
+              className="chip chip--gps"
+              onClick={() => captureLocation()}
+              disabled={locating}
+            >
+              <Icon.pin size={14} />
+              {locating ? 'Locating…' : 'Use my location'}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Address */}
@@ -325,7 +350,7 @@ export function ReportForm() {
         <button
           type="submit"
           className={`btn btn--lg btn--block${submitting ? ' is-wait' : ''}`}
-          disabled={submitting}
+          disabled={submitting || !coords}
         >
           {submitting ? (
             <>

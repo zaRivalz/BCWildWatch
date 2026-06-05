@@ -6,6 +6,8 @@ import { emailFilter, mapAnimal, mapReportRow, dataverseOrigin, isGuid, type Ani
 import { DEFAULT_STATUS_VALUE, type ReportStatusValue } from '@/lib/reportStatus';
 import { DEFAULT_ROLE_VALUE, USER_ROLES, isValidRoleValue, type RoleValue } from '@/lib/roles';
 import { attachMediaToReports, type MediaRow } from '@/lib/media';
+import { priorityTone } from '@/lib/animalPriority';
+import { kindForName, type RiskTone } from '@/components/animal-glyph';
 
 let tokenCache: { token: string; expiresAt: number } | null = null;
 
@@ -50,7 +52,7 @@ async function dv(method: string, path: string, body?: unknown, extraHeaders?: R
 }
 
 export async function getAnimals(): Promise<Animal[]> {
-  const r = await dv('GET', '/api/data/v9.2/bcw_animals?$select=bcw_animalid,bcw_name&$orderby=bcw_name asc');
+  const r = await dv('GET', '/api/data/v9.2/bcw_animals?$select=bcw_animalid,bcw_name,bcw_priority&$orderby=bcw_name asc');
   return (r?.value ?? []).map(mapAnimal);
 }
 
@@ -118,15 +120,39 @@ export async function linkMedia(reportId: string, url: string, filename?: string
   });
 }
 
-export async function getRecentReports(top = 10) {
+export interface RecentReport {
+  id: string;
+  address: string;
+  campus: string;
+  createdOn: string;
+  animal: string;
+  risk: RiskTone;
+}
+
+export async function getRecentReports(top = 10): Promise<RecentReport[]> {
   const r = await dv('GET',
-    `/api/data/v9.2/bcw_reports?$select=bcw_reportid,bcw_addressdescription,createdon&$orderby=createdon desc&$top=${top}&$expand=bcw_Animal($select=bcw_name)`);
-  return (r?.value ?? []).map((row: { bcw_reportid: string; bcw_addressdescription: string; createdon: string; bcw_Animal?: { bcw_name: string } }) => ({
-    id: row.bcw_reportid,
-    address: row.bcw_addressdescription,
-    createdOn: row.createdon,
-    animal: row.bcw_Animal?.bcw_name ?? 'Unknown',
-  }));
+    `/api/data/v9.2/bcw_reports?$select=bcw_reportid,bcw_addressdescription,bcw_location,createdon&$orderby=createdon desc&$top=${top}&$expand=bcw_Animal($select=bcw_name,bcw_priority)`);
+  const reports: RecentReport[] = (r?.value ?? []).map((row: {
+    bcw_reportid: string;
+    bcw_addressdescription: string;
+    bcw_location?: string | null;
+    createdon: string;
+    bcw_Animal?: { bcw_name: string; bcw_priority?: number | null };
+  }): RecentReport => {
+    const animal = row.bcw_Animal?.bcw_name ?? 'Unknown';
+    // Prefer the priority set in Dataverse; fall back to the built-in mapping.
+    const risk = priorityTone(row.bcw_Animal?.bcw_priority) ?? kindForName(animal).risk;
+    return {
+      id: row.bcw_reportid,
+      address: row.bcw_addressdescription,
+      campus: row.bcw_location ?? '',
+      createdOn: row.createdon,
+      animal,
+      risk,
+    };
+  });
+
+  return reports;
 }
 
 export async function getMyReports(email: string): Promise<ReportRow[]> {

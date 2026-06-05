@@ -1,5 +1,5 @@
 import { getRecentReports } from '@/lib/dataverse';
-import { AnimalToken, kindForName } from '@/components/animal-glyph';
+import { AnimalToken } from '@/components/animal-glyph';
 import { RiskBadge } from '@/components/status-pill';
 import { relativeTime } from '@/lib/relativeTime';
 import { Icon } from '@/components/icons';
@@ -28,27 +28,26 @@ export async function RecentSightings() {
 
   return (
     <div className="sightings">
-      {reports.map(
-        (r: { id: string; address: string; createdOn: string; animal: string }) => {
-          const kind = kindForName(r.animal);
-          return (
-            <article key={r.id} className="sighting card rise">
-              <div className="sighting__media">
-                <div className="ph">
-                  <span className="ph__tag">{r.animal}</span>
-                </div>
-                <span className="sighting__badge">
-                  <RiskBadge risk={kind.risk} />
-                </span>
-                <span className="sighting__tok">
-                  <AnimalToken name={r.animal} size={44} />
-                </span>
+      {reports.map((r) => {
+        return (
+          <article key={r.id} className="sighting card rise">
+            <div className="sighting__media">
+              <div className="ph">
+                <span className="ph__tag">{r.animal}</span>
               </div>
+              <span className="sighting__badge">
+                <RiskBadge risk={r.risk} />
+              </span>
+              <span className="sighting__tok">
+                <AnimalToken name={r.animal} size={44} />
+              </span>
+            </div>
               <div className="sighting__body">
                 <h4>{r.animal}</h4>
                 <div className="sighting__meta">
                   <span className="row">
                     <Icon.pin size={14} /> {r.address}
+                    {r.campus ? ` — ${r.campus}` : ''}
                   </span>
                   <span className="row">
                     <Icon.clock size={14} /> {relativeTime(r.createdOn)}

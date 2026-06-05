@@ -1,5 +1,6 @@
 import { PageHead } from '@/components/page-head';
 import { Icon } from '@/components/icons';
+import { MapFrame } from '@/components/map-frame';
 
 export default function MapPage() {
   const url = process.env.POWERBI_MAP_URL;
@@ -13,13 +14,18 @@ export default function MapPage() {
       />
 
       {url ? (
-        <div className="card" style={{ overflow: 'hidden' }}>
-          <iframe
-            title="BC WildWatch Map"
-            src={url}
-            style={{ width: '100%', height: '70vh', border: 'none', display: 'block' }}
-            allowFullScreen
-          />
+        <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              aspectRatio: '16 / 9',
+              borderRadius: 'var(--r-lg)',
+              overflow: 'hidden',
+            }}
+          >
+            <MapFrame src={url} />
+          </div>
         </div>
       ) : (
         <div className="card" style={{ overflow: 'hidden', position: 'relative' }}>
